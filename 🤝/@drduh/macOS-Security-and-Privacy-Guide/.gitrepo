@@ -1,0 +1,12 @@
+; DO NOT EDIT (unless you know what you are doing)
+;
+; This subdirectory is a git "subrepo", and this file is maintained by the
+; git-subrepo command. See https://github.com/git-commands/git-subrepo#readme
+;
+[subrepo]
+	remote = git@github.com:drduh/macOS-Security-and-Privacy-Guide.git
+	branch = master
+	commit = bc6c363b142b72cdf4a544eb507d85982937272a
+	parent = 8c619a37f99894ce6a8bbe6e56a54d95f65e5562
+	method = rebase
+	cmdver = 0.4.0
