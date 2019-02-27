@@ -1,0 +1,12 @@
+; DO NOT EDIT (unless you know what you are doing)
+;
+; This subdirectory is a git "subrepo", and this file is maintained by the
+; git-subrepo command. See https://github.com/git-commands/git-subrepo#readme
+;
+[subrepo]
+	remote = git@github.com:drduh/config.git
+	branch = master
+	commit = f43142fb4c8154c84f09b2dec33b2cc48b91df8c
+	parent = 42496c1a94ea372b4e31e7a1eb24cd5d4da39f54
+	method = rebase
+	cmdver = 0.4.0
