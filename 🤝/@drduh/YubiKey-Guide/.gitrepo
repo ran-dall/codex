@@ -1,0 +1,12 @@
+; DO NOT EDIT (unless you know what you are doing)
+;
+; This subdirectory is a git "subrepo", and this file is maintained by the
+; git-subrepo command. See https://github.com/git-commands/git-subrepo#readme
+;
+[subrepo]
+	remote = git@github.com:drduh/YubiKey-Guide.git
+	branch = master
+	commit = 418643dd6216653dd3f85753c39d488cd308f1c6
+	parent = b0524841e003f7c608c77d1525ed543139a8363c
+	method = rebase
+	cmdver = 0.4.0
