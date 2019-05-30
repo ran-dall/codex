@@ -1,0 +1,12 @@
+; DO NOT EDIT (unless you know what you are doing)
+;
+; This subdirectory is a git "subrepo", and this file is maintained by the
+; git-subrepo command. See https://github.com/git-commands/git-subrepo#readme
+;
+[subrepo]
+	remote = git@github.com:davidhund/styleguide-generators.git
+	branch = master
+	commit = 135303aac42bd4c76c37e9c1bc4b0fb20ebdc5dd
+	parent = 9580abc0f4a8110834937b130ea2f917073e661d
+	method = merge
+	cmdver = 0.4.0
