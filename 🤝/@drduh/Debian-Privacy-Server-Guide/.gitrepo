@@ -6,7 +6,7 @@
 [subrepo]
 	remote = git@github.com:drduh/Debian-Privacy-Server-Guide
 	branch = master
-	commit = 1aa1b069e5e3218868af14216088fe5f263b1e78
-	parent = 2e7da99d63881ae0a40e99602c0e1729305e4e07
+	commit = 47c52ef41e1d25486a53de40050ec386a70f25ff
+	parent = 29a350665a1c7c76edf0ce81913c79139b44a026
 	method = merge
 	cmdver = 0.4.0

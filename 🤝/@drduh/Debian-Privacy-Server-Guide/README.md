@@ -34,17 +34,18 @@ Download and configure the gcloud [command line tool](https://cloud.google.com/s
 Log in and enter the verification code, then create a project with any name:
 
 ```console
+$ PROJECT=$(tr -dc '[:lower:]' < /dev/urandom | fold -w20 | head -n1)
+
 $ gcloud auth login
 
-$ gcloud projects create mlipmnyadedgzxruqj
+$ gcloud projects create $PROJECT
 
-$ gcloud config set project mlipmnyadedgzxruqj
+$ gcloud config set project $PROJECT
 ```
 
-Set the `PROJECT`, `INSTANCE`, `NETWORK`, [`TYPE`](https://cloud.google.com/compute/docs/machine-types), and [`ZONE`](https://cloud.google.com/compute/docs/regions-zones/) variables, as well as a recent `IMAGE`:
+Set the `INSTANCE`, `NETWORK`, [`TYPE`](https://cloud.google.com/compute/docs/machine-types), and [`ZONE`](https://cloud.google.com/compute/docs/regions-zones/) variables, as well as a recent `IMAGE`:
 
 ```console
-$ PROJECT=mlipmnyadedgzxruqj
 $ INSTANCE=debian-privsec-standard
 $ NETWORK=debian-privsec-net
 $ TYPE=n1-standard-1
@@ -76,8 +77,6 @@ $ gcloud compute firewall-rules create ssh-tcp-22 --network $NETWORK --allow tcp
 ```
 
 ## Update domain records
-
-This step is optional.
 
 Once you have an *External IP* assigned, you may want to configure a DNS record. To do so, go to Networking > [Cloud DNS](https://console.cloud.google.com/networking/dns/zones) and select **Create Zone** to create a new DNS zone.
 
@@ -117,7 +116,7 @@ $ ssh-add -L
 ssh-rsa AAAAB4NzaC1yc2EAAAADAQABAAACAz[...]zreOKM+HwpkHzcy9DQcVG2Nw== cardno:000605553211
 ```
 
-Or create a new [4096-bit](https://danielpocock.com/rsa-key-sizes-2048-or-4096-bits) [RSA](https://utcc.utoronto.ca/~cks/space/blog/sysadmin/SSHKeyTypes) key-pair to use for logging into the instance via SSH (pass-phrase is optional):
+Or create a new [4096-bit](https://danielpocock.com/rsa-key-sizes-2048-or-4096-bits) [RSA](https://utcc.utoronto.ca/~cks/space/blog/sysadmin/SSHKeyTypes) key-pair to use for logging into the instance via SSH:
 
 ```console
 $ ssh-keygen -t rsa -b 4096 -C 'sysadm' -f ~/.ssh/duh
@@ -391,8 +390,9 @@ Check the log to make sure it is running:
 $ sudo tail -F /tmp/dnsmasq
 started, version 2.76 cachesize 2000
 compile time options: IPv6 GNU-getopt DBus i18n IDN DHCP DHCPv6 no-Lua TFTP conntrack ipset auth DNSSEC loop-detect inotify
-using nameserver 8.8.8.8#53
-using nameserver 8.8.4.4#53
+compile time options: IPv6 GNU-getopt DBus i18n IDN DHCP DHCPv6 no-Lua TFTP conntrack ipset auth DNSSEC loop-detect inotify
+reading /etc/resolv.dnsmasq
+using nameserver 169.254.169.254#53
 read /etc/hosts - 6 addresses
 read /etc/dns-blocklist - 63894 addresses
 ```
@@ -401,12 +401,6 @@ If it fails to start, try running it manually:
 
 ```console
 $ sudo dnsmasq -C /etc/dnsmasq.conf -d
-dnsmasq: started, version 2.76 cachesize 2000
-dnsmasq: compile time options: IPv6 GNU-getopt DBus i18n IDN DHCP DHCPv6 no-Lua TFTP conntrack ipset auth DNSSEC loop-detect inotify
-dnsmasq: using nameserver 8.8.8.8#53
-dnsmasq: using nameserver 8.8.4.4#53
-dnsmasq: read /etc/hosts - 6 addresses
-dnsmasq: read /etc/dns-blocklist - 63894 addresses
 ```
 
 Query locally for an *A record* to confirm dnsmasq is working:
@@ -464,7 +458,7 @@ Copy the `sdns://` line to a client. To use a port other than 443, use https://d
 Update firewall rules to allow the new port:
 
 ```console
-$ gcloud compute firewall-rules create dnscrypt-udp-443 --network $NETWORK --allow udp:443 --source-ranges $(curl -s https://icanhazip.com) | grep CIDR | awk '{print $2}'
+$ gcloud compute firewall-rules create dnscrypt-udp-443 --network $NETWORK --allow udp:443 --source-ranges $(whois $(curl -s https://icanhazip.com) | grep CIDR | awk '{print $2}')
 ```
 
 On a client, edit `dnscrypt-proxy.toml` to include the server stamp:
@@ -742,22 +736,6 @@ If Tor did not start, try starting it manually (`sudo` may be required to bind t
 
 ```console
 $ tor -f /etc/tor/torrc
-[notice] Opening Socks listener on 127.0.0.1:9050
-[notice] Opening OR listener on 0.0.0.0:9993
-[notice] Opening Extended OR listener on 127.0.0.1:0
-Extended OR listener listening on port 50161.
-[...]
-Bootstrapped 0%: Starting
-Bootstrapped 5%: Connecting to directory server
-Bootstrapped 45%: Asking for relay descriptors
-Bootstrapped 78%: Loading relay descriptors
-Registered server transport 'obfs4' at '[::]:10022'
-Guessed our IP address as 104.197.215.107 (source: 62.210.222.166).
-We now have enough directory information to build circuits.
-Bootstrapped 80%: Connecting to the Tor network
-Bootstrapped 90%: Establishing a Tor circuit
-Tor has successfully opened a circuit. Looks like client functionality is working.
-Bootstrapped 100%: Done
 ```
 
 Copy the bridgeline, filling in the IP address and port:
@@ -811,7 +789,7 @@ To generate a specific .onion hostname, [some](https://security.stackexchange.co
 
 Create your own [public-key infrastructure](https://security.stackexchange.com/questions/87564/how-does-ssl-tls-pki-work), so that you may use your own keys and certificates for VPN, HTTPS, etc.
 
-To create a certificate authority, intermediate authority, server and client certificates, download the following [script](https://github.com/drduh/config/blob/master/scripts/pki.sh).
+To create a certificate authority, server and client certificates, download the following [script](https://github.com/drduh/config/blob/master/scripts/pki.sh).
 
 It is recommended running the script to generate keys client-side, in a trusted computing environment, preferably [air-gapped](https://en.wikipedia.org/wiki/Air_gap_(networking)).
 
@@ -850,15 +828,15 @@ Generating RSA private key, 4096 bit long modulus
 Sign the certificate? [y/n]:y
 ```
 
-If there were no errors, the script created private and public keys for a certificate authority, an intermediate certificate authority, a server and a client - along with certificate request (srl) and configuration files (cnf).
+If there were no errors, the script created private and public keys for a certificate authority, a server and a client - along with certificate request (srl) and configuration files (cnf).
 
 To check a certificate file (`.pem` extension) with OpenSSL:
 
 ```console
 $ openssl x509 -in ca.pem -noout -subject -issuer -enddate
-subject=CN = Example Authority
-issuer=CN = Example Authority
-notAfter=Dec 1 00:00:00 2018 GMT
+subject= /CN=4CC90cC34b
+issuer= /CN=4CC90cC34b
+notAfter=Dec 1 00:00:00 2020 GMT
 ```
 
 You could also use [OpenVPN/easy-rsa](https://github.com/OpenVPN/easy-rsa) or [Let's Encrypt](https://letsencrypt.org).
@@ -896,7 +874,7 @@ $ openssl dhparam -dsaparam -out dh.pem 4096
 Copy these files and certificates from the previous section to the server (note, the only *private* key sent is for the server itself):
 
 ```console
-$ scp ta.key dh.pem ca.pem intermediate.pem server.pem server.key duh:~
+$ scp ta.key dh.pem ca.pem server.pem server.key duh:~
 ```
 
 On the server-side, move the files into place:
@@ -904,9 +882,9 @@ On the server-side, move the files into place:
 ```console
 $ sudo mkdir /etc/pki
 
-$ cat ca.pem intermediate.pem > chain.pem
+$ sudo mv ca.pem server.pem server.key dh.pem ta.key /etc/pki
 
-$ sudo cp chain.pem server.pem server.key dh.pem ta.key /etc/pki
+$ sudo chmod 0400 /etc/pki/server.key /etc/pki/ta.key /etc/pki/dh.pem
 ```
 
 Enable [IP forwarding](https://linuxconfig.org/how-to-turn-on-off-ip-forwarding-in-linux) and make the change permanent:
@@ -963,28 +941,6 @@ IFCONFIG POOL: base=10.8.0.2 size=252, ipv6=0
 Initialization Sequence Completed
 ```
 
-If it fails, try to start OpenVPN server manually:
-
-```console
-$ sudo openvpn --config /etc/openvpn/server.ovpn --verb 3 --suppress-timestamps
-OpenVPN 2.4.0 x86_64-pc-linux-gnu [SSL (OpenSSL)] [LZO] [LZ4] [EPOLL] [PKCS11] [MH/PKTINFO] [AEAD] built on Jul 18 2017
-library versions: OpenSSL 1.0.2l  25 May 2017, LZO 2.08
-Diffie-Hellman initialized with 4096 bit key
-Control Channel Authentication: using '/etc/pki/ta.key' as a OpenVPN static key file
-Outgoing Control Channel Authentication: Using 256 bit message hash 'SHA256' for HMAC authentication
-Incoming Control Channel Authentication: Using 256 bit message hash 'SHA256' for HMAC authentication
-ROUTE_GATEWAY 10.240.0.1
-TUN/TAP device tun0 opened
-TUN/TAP TX queue length set to 100
-do_ifconfig, tt->did_ifconfig_ipv6_setup=1
-/sbin/ip link set dev tun0 up mtu 1500
-/sbin/ip addr add dev tun0 10.8.0.1/24 broadcast 10.8.0.255
-/sbin/ip -6 addr add 2001:db8:123::1/64 dev tun0
-/sbin/ip route add 10.8.0.0/24 via 10.8.0.2
-[...]
-Initialization Sequence Completed
-```
-
 If OpenVPN still fails due to unknown ciphers, you may need to install a newer OpenVPN server version - see [OpenvpnSoftwareRepos](https://community.openvpn.net/openvpn/wiki/OpenvpnSoftwareRepos).
 
 Update the remote hosts firewall rules to allow the new VPN listening port (in this case, UDP port 443).
@@ -994,7 +950,7 @@ For each connecting device, edit a [client configuration](https://openvpn.net/in
 ```console
 $ mkdir ~/vpn
 
-$ cp ~/vpn
+$ cd ~/vpn
 
 $ cp ~/config/client.ovpn .
 ```
@@ -1005,13 +961,7 @@ Add the CA certificate, client certificate and client key material to the config
 $ (echo "<ca>" ; cat ~/pki/ca.pem ; echo "</ca>\n<cert>" ; cat ~/pki/client.pem; echo "</cert>\n<key>" ; cat ~/pki/client.key ; echo "</key>") >> client.ovpn
 ```
 
-From a client, copy `ta.key` from the server:
-
-```console
-$ scp duh:~/pki/ta.key ~/vpn
-```
-
-To connect, install and start OpenVPN:
+Install and start OpenVPN:
 
 ```console
 $ sudo apt-get -y install openvpn
@@ -1022,7 +972,6 @@ $ sudo openvpn --config client.ovpn
 [...]
 TLS: Initial packet from [AF_INET]104.197.215.107:443, sid=6901c819 3e11276e
 VERIFY OK: depth=2, CN=Duh Authority
-VERIFY OK: depth=1, CN=Duh Intermediate Authority
 Validating certificate key usage
 ++ Certificate has key usage  00a0, expects 00a0
 VERIFY KU OK
@@ -1049,17 +998,11 @@ $ curl -4 https://icanhazip.com/
 
 To connect from Android, install [OpenVPN Connect](https://play.google.com/store/apps/details?id=net.openvpn.openvpn).
 
-Copy `client.ovpn` and `ta.key` to a folder on the Android device, using a USB cable or by sharing the files through Google Drive, for example.
+Copy `client.ovpn` and `ta.key` to a directory on the Android device using adb or Android File Transfer.
 
 Select **Import** > **Import Profile from SD card** and select `client.ovpn`, perhaps in the Download folder.
 
 If the profile was was successfully imported, select **Connect**.
-
-**Mac** Install OpenVPN from [Homebrew](https://github.com/drduh/OS-X-Security-and-Privacy-Guide#homebrew):
-
-```console
-$ brew install openvpn
-```
 
 Start OpenVPN:
 
@@ -1069,7 +1012,6 @@ OpenVPN 2.4.4 x86_64-apple-darwin16.7.0 [SSL (OpenSSL)] [LZO] [LZ4] [PKCS11] [MH
 [...]
 TLS: Initial packet from [AF_INET]104.197.215.107:443, sid=db4ecf82 4e4e4c5b
 VERIFY OK: depth=2, CN=Duh Authority
-VERIFY OK: depth=1, CN=Duh Intermediate Authority
 Validating certificate key usage
 ++ Certificate has key usage  00a0, expects 00a0
 VERIFY KU OK
@@ -1087,8 +1029,6 @@ Verify traffic is routed through the remote host:
 $ curl -4 https://icanhazip.com/
 104.197.215.107
 ```
-
-See [macOS-Security-and-Privacy-Guide#vpn](https://github.com/drduh/macOS-Security-and-Privacy-Guide#vpn).
 
 ## Web Server
 
@@ -1191,10 +1131,10 @@ $ sudo cp ~/pki/server.pem /etc/pki/xmpp-cert.pem
 $ sudo cp ~/pki/server.key /etc/pki/xmpp-key.pem
 ```
 
-If using a custom CA or intermediate certificate, append it to the server certificate, for example:
+Append the CA to the server certificate:
 
 ```console
-$ cd ~/pki && cat server.pem intermediate.pem ca.pem | sudo tee /etc/pki/xmpp-cert.pem
+$ cd ~/pki && cat server.pem ca.pem | sudo tee /etc/pki/xmpp-cert.pem
 ```
 
 Or generate a new self-signed certificate:
