@@ -6,7 +6,7 @@
 [subrepo]
 	remote = git@github.com:drduh/config.git
 	branch = master
-	commit = ca0355e105916ad6a8af5da77684298c4e01531b
-	parent = af54c8feae35bccc98d02a4cfe3b23b3777b167b
+	commit = 849a9f39d28fc08ed0043a1b003c0799049ac5e3
+	parent = 215402472abd333739bac591a514180efba38834
 	method = rebase
 	cmdver = 0.4.0
