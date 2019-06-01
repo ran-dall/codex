@@ -1,0 +1,12 @@
+; DO NOT EDIT (unless you know what you are doing)
+;
+; This subdirectory is a git "subrepo", and this file is maintained by the
+; git-subrepo command. See https://github.com/git-commands/git-subrepo#readme
+;
+[subrepo]
+	remote = git@github.com:troxler/awesome-css-frameworks.git
+	branch = master
+	commit = b1dc4774eab0eb8be62a753266f1f72822f69bc6
+	parent = 982425b3c174a2aa222ee7a9137ebc9498689ce0
+	method = merge
+	cmdver = 0.4.0
