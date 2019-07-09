@@ -6,7 +6,7 @@
 [subrepo]
 	remote = git@github.com:drduh/YubiKey-Guide.git
 	branch = master
-	commit = 1b9fc107c00100b9d6537a979262558ba67705ca
-	parent = 3930e1f781b4d53a77c0a0d56d8d4bc0f37bc324
+	commit = 6482036e17756b6a7b9ed84bfdcf6e1896e2cc74
+	parent = 379a77ace7ccd3b27dcdbf98fdad7e9bce4aacb6
 	method = rebase
 	cmdver = 0.4.0

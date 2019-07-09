@@ -8,7 +8,7 @@ If you have a comment or suggestion, please open an [Issue](https://github.com/d
 
 - [Purchase YubiKey](#purchase-yubikey)
 - [Verify YubiKey](#verify-yubikey)
-- [Live image](#live-image)
+- [Download OS image](#download-os-image)
 - [Required software](#required-software)
   * [Entropy](#entropy)
 - [Creating keys](#creating-keys)
@@ -37,7 +37,6 @@ If you have a comment or suggestion, please open an [Issue](https://github.com/d
   * [Copy public key](#copy-public-key)
   * [(Optional) Save public key for identity file configuration](#-optional--save-public-key-for-identity-file-configuration)
   * [Connect with public key authentication](#connect-with-public-key-authentication)
-  * [Touch to authenticate](#touch-to-authenticate)
   * [Import SSH keys](#import-ssh-keys)
   * [Remote Machines (agent forwarding)](#remote-machines--agent-forwarding-)
   * [GitHub](#github)
@@ -47,8 +46,10 @@ If you have a comment or suggestion, please open an [Issue](https://github.com/d
       - [Prerequisites](#prerequisites)
       - [WSL configuration](#wsl-configuration)
       - [Remote host configuration](#remote-host-configuration)
-      - [Final test](#final-test)
+- [Multiple Keys](#multiple-keys)
+- [Require touch](#require-touch)
 - [Email](#email)
+- [Reset](#reset)
 - [Notes](#notes)
 - [Troubleshooting](#troubleshooting)
 - [Links](#links)
@@ -57,22 +58,22 @@ If you have a comment or suggestion, please open an [Issue](https://github.com/d
 
 All YubiKeys except the blue "security key" model are compatible with this guide. NEO models are limited to 2048-bit RSA keys. Compare YubiKeys [here](https://www.yubico.com/products/yubikey-hardware/compare-products-series/).
 
-You will also need several small storage devices for booting a live image, creating backups of private and public keys.
+You will also need several small storage devices for booting a temporary operating system and creating backups of private/public keys.
 
 # Verify YubiKey
 
 To verify a YubiKey is genuine, open a [browser with U2F support](https://support.yubico.com/support/solutions/articles/15000009591-how-to-confirm-your-yubico-device-is-genuine-with-u2f) to [https://www.yubico.com/genuine/](https://www.yubico.com/genuine/). Insert a Yubico device, and select *Verify Device* to begin the process. Touch the YubiKey when prompted, and if asked, allow it to see the make and model of the device. If you see *Verification complete*, the device is authentic.
 
-This website verifies the YubiKey's device attestation certificates signed by a set of Yubico CAs, and helps mitigate [supply chain attacks](https://media.defcon.org/DEF%20CON%2025/DEF%20CON%2025%20presentations/DEFCON-25-r00killah-and-securelyfitz-Secure-Tokin-and-Doobiekeys.pdf).
+This website verifies the YubiKey's device attestation certificates signed by a set of Yubico CAs, and helps mitigate [supply chain attacks](https://media.defcon.org/DEF%20CON%2025/DEF%20CON%2025%20presentations/DEF%20CON%2025%20-%20r00killah-and-securelyfitz-Secure-Tokin-and-Doobiekeys.pdf).
 
-# Live image
+# Download OS Image
 
-It is recommended to generate cryptographic keys and configure YubiKey from a secure operating system and ephemeral environment, such as [Debian Live](https://www.debian.org/CD/live/), [Tails](https://tails.boum.org/index.en.html), or [OpenBSD](https://www.openbsd.org/).
+It is recommended to generate cryptographic keys and configure YubiKey from a secure operating system and using an ephemeral environment ("live image"), such as [Debian](https://www.debian.org/CD/live/), [Tails](https://tails.boum.org/index.en.html), or [OpenBSD](https://www.openbsd.org/) booted from a USB drive.
 
-To use Debian, download the latest live image:
+To use Debian, download the latest image:
 
 ```console
-$ curl -LfO https://cdimage.debian.org/debian-cd/current-live/amd64/iso-hybrid/debian-live-9.9.0-amd64-xfce.iso
+$ curl -LfO https://cdimage.debian.org/debian-cd/current-live/amd64/iso-hybrid/debian-live-10.0.0-amd64-xfce.iso
 
 $ curl -LfO https://cdimage.debian.org/debian-cd/current-live/amd64/iso-hybrid/SHA512SUMS
 
@@ -83,7 +84,7 @@ Verify file integrity with GPG:
 
 ```console
 $ gpg --verify SHA512SUMS.sign SHA512SUMS
-gpg: Signature made Sat Apr 27 11:46:08 2019 PDT
+gpg: Signature made Sat Jul  6 18:51:32 2019 PDT
 gpg:                using RSA key DF9B9C49EAA9298432589D76DA87E80D6294BE9B
 gpg: Can't check signature: No public key
 
@@ -96,22 +97,24 @@ gpg: Total number processed: 1
 gpg:               imported: 1
 
 $ gpg --verify SHA512SUMS.sign SHA512SUMS
-gpg: Signature made Sat Apr 27 11:46:08 2019 PDT
+gpg: Signature made Sat Jul  6 18:51:32 2019 PDT
 gpg:                using RSA key DF9B9C49EAA9298432589D76DA87E80D6294BE9B
 gpg: Good signature from "Debian CD signing key <debian-cd@lists.debian.org>" [unknown]
 gpg: WARNING: This key is not certified with a trusted signature!
 gpg:          There is no indication that the signature belongs to the owner.
 Primary key fingerprint: DF9B 9C49 EAA9 2984 3258  9D76 DA87 E80D 6294 BE9B
 
-$ grep $(sha512sum debian-live-9.9.0-amd64-xfce.iso) SHA512SUMS
-SHA512SUMS:ae064cc399126214e4aa165fdbf9659047dd2af2d3b0ca57dd5f2686d1d3730019cfe3c56ac48db2af56eb856dbca75e642fadf56bc04c538b44d3d3a2982283 debian-live-9.9.0-amd64-xfce.iso
+$ grep $(sha512sum debian-live-10.0.0-amd64-xfce.iso) SHA512SUMS
+SHA512SUMS:c230dc15705bbae07782185af7f933ed7821ec94fa4b9d08a61856b27cdf7d3a4e9f5b6ddb419b96714464ca76c2686083fc4534dc116cc9980b52c233331e03  debian-live-10.0.0-amd64-xfce.iso
 ```
 
-If the key cannot be received, try changing the DNS resolver and/or specific keyserver:
+If the key cannot be received, try changing the DNS resolver and/or use a specific keyserver:
 
 ```console
 $ gpg --keyserver hkps://keyserver.ubuntu.com:443 --recv DF9B9C49EAA9298432589D76DA87E80D6294BE9B
 ```
+
+See [Verifying authenticity of Debian CDs](https://www.debian.org/CD/verify) for more information.
 
 Mount a storage device and copy the image to it:
 
@@ -130,7 +133,7 @@ sd 2:0:0:0: [sdb] Write cache: disabled, read cache: enabled, doesn't support DP
 sdb: sdb1 sdb2
 sd 2:0:0:0: [sdb] Attached SCSI removable disk
 
-$ sudo dd if=debian-live-9.9.0-amd64-xfce.iso of=/dev/sdb bs=4M
+$ sudo dd if=debian-live-10.0.0-amd64-xfce.iso of=/dev/sdb bs=4M
 465+1 records in
 465+1 records out
 1951432704 bytes (2.0 GB, 1.8 GiB) copied, 42.8543 s, 45.5 MB/s
@@ -143,7 +146,7 @@ $ dmesg | tail -n2
 sd2 at scsibus4 targ 1 lun 0: <TS-RDF5, SD Transcend, TS3A> SCSI4 0/direct removable serial.0000000000000
 sd2: 15193MB, 512 bytes/sector, 31116288 sectors
 
-$ doas dd if=debian-live-9.9.0-amd64-xfce.iso of=/dev/rsd2c bs=4m
+$ doas dd if=debian-live-10.0.0-amd64-xfce.iso of=/dev/rsd2c bs=4m
 465+1 records in
 465+1 records out
 1951432704 bytes transferred in 139.125 secs (14026448 bytes/sec)
@@ -151,11 +154,11 @@ $ doas dd if=debian-live-9.9.0-amd64-xfce.iso of=/dev/rsd2c bs=4m
 
 Shut down the computer and disconnect internal hard drives and all unnecessary peripheral devices.
 
-Consider using secure hardware like a ThinkPad X230 running [Coreboot](https://www.coreboot.org/) and cleaned of [Intel ME](https://github.com/corna/me_cleaner).
+Consider using secure hardware like a ThinkPad X230 running [Coreboot](https://www.coreboot.org/) and [cleaned of Intel ME](https://github.com/corna/me_cleaner).
 
 # Required software
 
-Boot the live image and configure networking.
+Boot the OS image and configure networking.
 
 **Note** If the screen locks, unlock with `user`/`live`.
 
@@ -164,7 +167,7 @@ Open the terminal and install several required packages:
 **Debian/Ubuntu**
 
 ```console
-$ sudo apt-get update && sudo apt-get install -y \
+$ sudo apt update && sudo apt install -y \
     gnupg2 gnupg-agent dirmngr \
     cryptsetup scdaemon pcscd \
     secure-delete hopenpgp-tools \
@@ -243,14 +246,14 @@ $ sudo atd
 $ sudo service rng-tools restart
 ```
 
-Test by emptying `/dev/random` - the light on the device should dim briefly:
+Test by emptying `/dev/random` - the light on the device will dim briefly:
 
 ```console
 $ cat /dev/random >/dev/null
 [Press Control-C]
 ```
 
-Verify the available entropy pool is re-seeded:
+After a few seconds, verify the available entropy pool is quickly re-seeded:
 
 ```console
 $ cat /proc/sys/kernel/random/entropy_avail
@@ -612,7 +615,11 @@ ssb  rsa4096/0x5912A795E90DD2CF
 ssb  rsa4096/0x3F29127E79649A3D
     created: 2017-10-09  expires: 2018-10-09       usage: A
 [ultimate] (1). Dr Duh <doc@duh.to>
+```
 
+Finish by saving the keys.
+
+```console
 gpg> save
 ```
 
@@ -634,7 +641,7 @@ ssb   rsa4096/0x3F29127E79649A3D 2017-10-09 [A] [expires: 2018-10-09]
 
 Add any additional identities or email addresses you wish to associate using the `adduid` command.
 
-**Optional** Verify with OpenPGP key checks, use the automated [key best practice checker](https://riseup.net/en/security/message-security/openpgp/best-practices#openpgp-key-checks):
+**Tip** Verify with a OpenPGP [key best practice checker](https://riseup.net/en/security/message-security/openpgp/best-practices#openpgp-key-checks):
 
 ```console
 $ gpg --export $KEYID | hokey lint
@@ -667,6 +674,8 @@ $ gpg --armor --export-secret-subkeys $KEYID -o \path\to\dir\sub.gpg
 # Backup
 
 Once GPG keys are moved to YubiKey, they cannot be moved again! Create an **encrypted** backup of the keyring and consider using a [paper copy](https://www.jabberwocky.com/software/paperkey/) of the keys as an additional backup.
+
+**Tip**: The ext2 filesystem (without encryption) can be mounted on both Linux and OpenBSD.
 
 **Linux**
 
@@ -717,8 +726,8 @@ Command (m for help): n
 Partition type
    p   primary (0 primary, 0 extended, 4 free)
    e   extended (container for logical partitions)
-Select (default p): 
-Partition number (1-4, default 1): 
+Select (default p):
+Partition number (1-4, default 1):
 First sector (2048-62980095, default 2048):
 Last sector, +sectors or +size{K,M,G,T,P} (2048-62980095, default 62980095): +10M
 
@@ -1215,7 +1224,7 @@ $ sudo srm -r $GNUPGHOME || sudo rm -rf $GNUPGHOME
 $ gpg --delete-secret-key $KEYID
 ```
 
-**Important** Make sure you have securely erased all generated keys and revocation certificates if a Live image was not used!
+**Important** Make sure you have securely erased all generated keys and revocation certificates if an ephemeral enviroment was not used!
 
 # Using keys
 
@@ -1265,7 +1274,7 @@ gpg: Total number processed: 1
 gpg:               imported: 1
 ```
 
-Edit the master key to assign it ultimate trust by selecting `trust` then option `5`:
+Edit the master key to assign it ultimate trust by selecting `trust` and `5`:
 
 ```console
 $ export KEYID=0xFF3E7D88647EBCDB
@@ -1469,16 +1478,18 @@ Probably the biggest thing missing from `gpg-agent`'s ssh agent support is being
 Create a hardened configuration for gpg-agent by downloading [drduh/config/gpg-agent.conf](https://github.com/drduh/config/blob/master/gpg-agent.conf):
 
 ```console
-$ curl -o ~/.gnupg/gpg-agent.conf https://raw.githubusercontent.com/drduh/config/master/gpg-agent.conf
+$ cd ~/.gnupg
 
-$ cat ~/.gnupg/gpg-agent.conf
+$ wget https://raw.githubusercontent.com/drduh/config/master/gpg-agent.conf
+
+$ grep -ve "^#" gpg-agent.conf
 enable-ssh-support
 default-cache-ttl 60
 max-cache-ttl 120
 pinentry-program /usr/bin/pinentry-curses
 ```
 
-Alternatively, you may want to use `/usr/bin/pinentry-gnome3` for a GUI-based prompt.
+**Tip** Set `pinentry-program /usr/bin/pinentry-gnome3` for a GUI-based prompt.
 
 On macOS, use `brew install pinentry-mac` and adjust the program path to suit.
 
@@ -1561,26 +1572,6 @@ debug1: Authentication succeeded (publickey).
 ```
 
 **Note** To make multiple connections or securely transfer many files, consider using the [ControlMaster](https://en.wikibooks.org/wiki/OpenSSH/Cookbook/Multiplexing) ssh option. Also see [drduh/config/ssh_config](https://github.com/drduh/config/blob/master/ssh_config).
-
-## Touch to authenticate
-
-**Note** This is not possible on YubiKey NEO.
-
-By default, YubiKey will perform key operations without requiring a touch from the user. To require a touch for every SSH authentication, use the [YubiKey Manager](https://developers.yubico.com/yubikey-manager/) and Admin PIN:
-
-```console
-$ ykman openpgp touch aut on
-```
-
-To require a touch for signing and encryption operations:
-
-```console
-$ ykman openpgp touch sig on
-
-$ ykman openpgp touch enc on
-```
-
-The YubiKey will blink when it's waiting for touch.
 
 ## Import SSH keys
 
@@ -1784,19 +1775,113 @@ StreamLocalBindUnlink yes
 
 And reload the SSH daemon (e.g., `sudo service sshd reload`).
 
-#### Final test
+Unplug YubiKey, disconnect or reboot. Log back in to Windows, open a WSL console and enter `ssh-add -l` - you should see nothing.
 
-- Unplug YubiKey, disconnect or reboot.
-- Log back in to Windows, open a WSL console and enter `ssh-add -l` - you should see nothing.
-- Plug in YubiKey, enter the same command to display the ssh key.
-- Log in to the remote host, you should have the pinentry dialog asking for the YubiKey pin.
-- On the remote host, type `ssh-add -l` - if you see the ssh key, that means forwarding works!
+Plug in YubiKey, enter the same command to display the ssh key.
+
+Log in to the remote host, you should have the pinentry dialog asking for the YubiKey pin.
+
+On the remote host, type `ssh-add -l` - if you see the ssh key, that means forwarding works!
 
 **Note** Agent forwarding may be chained through multiple hosts - just follow the same [protocol](#remote-host-configuration) to configure each host.
 
+# Multiple Keys
+
+To use a single identity with multiple YubiKeys - or to replace a lost card with another - issue this command to switch keys:
+
+```console
+$ gpg-connect-agent "scd serialno" "learn --force" /bye
+```
+
+Alternatively, you could manually delete the GnuPG shadowed key - where the card serial number is stored (see [GnuPG #T2291](https://dev.gnupg.org/T2291)).
+
+Find the `Keygrip` number of each key:
+
+```console
+$ gpg --with-keygrip -k $KEYID
+pub   rsa4096/0xFF3E7D88647EBCDB 2017-10-09 [C]
+      Key fingerprint = 011C E16B D45B 27A5 5BA8  776D FF3E 7D88 647E BCDB
+      Keygrip = 7A20855980A62C10569DE893157F38A696B1300E
+uid                  [  ultime ] Dr Duh <doc@duh.to>
+sub   rsa4096/0xBECFA3C1AE191D15 2017-10-09 [S] [expires: 2018-10-09]
+      Keygrip = 85D44BD52AD45C0852BD15BF41161EE9AE477398
+sub   rsa4096/0x5912A795E90DD2CF 2017-10-09 [E] [expires: 2018-10-09]
+      Keygrip = A0AA3D9F626BDEA3B833F290C7BCA79216C8A996
+sub   rsa4096/0x3F29127E79649A3D 2017-10-09 [A] [expires: 2018-10-09]
+      Keygrip = 7EF25A1115294342F451BC1CDD0FA94395F2D074
+```
+
+Delete all the shadow keys using their `Keygrip` number:
+
+```console
+$ cd ~/.gnupg/private-keys-v1.d
+
+$ rm 85D44BD52AD45C0852BD15BF41161EE9AE477398.key \
+    A0AA3D9F626BDEA3B833F290C7BCA79216C8A996.key \
+    7EF25A1115294342F451BC1CDD0FA94395F2D074.key
+```
+
+Insert the new YubiKey and re-generate shadow-keys by checking card status:
+
+```console
+$ gpg --card-status
+```
+
+See discussion in Issues [#19](https://github.com/drduh/YubiKey-Guide/issues/19) and [#112](https://github.com/drduh/YubiKey-Guide/issues/112) for more information and troubleshooting steps.
+
+# Require touch
+
+**Note** This is not possible on YubiKey NEO.
+
+By default, YubiKey will perform encryption, signing and authentication operations without requiring any action from the user, after the key is plugged in and first unlocked with the PIN.
+
+To require a touch for each key operation, install [YubiKey Manager](https://developers.yubico.com/yubikey-manager/) and recall the Admin PIN:
+
+Authentication:
+
+```console
+$ ykman openpgp set-touch aut on
+```
+
+Signing:
+
+```console
+$ ykman openpgp set-touch sig on
+```
+
+Encryption:
+
+```console
+$ ykman openpgp set-touch enc on
+```
+
+YubiKey will blink when it is waiting for a touch.
+
 # Email
 
-GPG keys on YubiKey can be used with ease to encrypt or sign email messages and attachments using [Thunderbird](https://www.thunderbird.net/) and [Enigmail](https://www.enigmail.net). Thunderbird supports OAuth 2 authentication and can be used with Gmail. See [this guide](https://ssd.eff.org/en/module/how-use-pgp-linux) from EFF for detailed instructions.
+GPG keys on YubiKey can be used with ease to encrypt and/or sign emails and attachments using [Thunderbird](https://www.thunderbird.net/) and [Enigmail](https://www.enigmail.net). Thunderbird supports OAuth 2 authentication and can be used with Gmail. See [this guide](https://ssd.eff.org/en/module/how-use-pgp-linux) from EFF for detailed instructions.
+
+# Reset
+
+If PIN attempts are exceeded, the card is locked and must be [reset](https://developers.yubico.com/ykneo-openpgp/ResetApplet.html) and set up again using the encrypted backup.
+
+Copy the following script to a file and run `gpg-connect-agent -R $file` to lock and terminate the card. Then re-insert YubiKey to reset.
+
+```console
+/hex
+scd serialno
+scd apdu 00 20 00 81 08 40 40 40 40 40 40 40 40
+scd apdu 00 20 00 81 08 40 40 40 40 40 40 40 40
+scd apdu 00 20 00 81 08 40 40 40 40 40 40 40 40
+scd apdu 00 20 00 81 08 40 40 40 40 40 40 40 40
+scd apdu 00 20 00 83 08 40 40 40 40 40 40 40 40
+scd apdu 00 20 00 83 08 40 40 40 40 40 40 40 40
+scd apdu 00 20 00 83 08 40 40 40 40 40 40 40 40
+scd apdu 00 20 00 83 08 40 40 40 40 40 40 40 40
+scd apdu 00 e6 00 00
+scd apdu 00 44 00 00
+/echo Card has been successfully reset.
+```
 
 # Notes
 
@@ -1832,8 +1917,6 @@ GPG keys on YubiKey can be used with ease to encrypt or sign email messages and 
 - If you receive the error, `Permission denied (publickey)`, increase ssh verbosity with the `-v` flag and ensure the public key from the card is being offered: `Offering public key: RSA SHA256:abcdefg... cardno:00060123456`. If it is, ensure you are connecting as the right user on the target system, rather than as the user on the local system. Otherwise, be sure `IdentitiesOnly` is not [enabled](https://github.com/FiloSottile/whosthere#how-do-i-stop-it) for this host.
 
 - If SSH authentication stil fails - add up to 3 `-v` flags to increase verbosity.
-
-- If you totally screw up, you can [reset the card](https://developers.yubico.com/ykneo-openpgp/ResetApplet.html).
 
 # Links
 
