@@ -1,0 +1,12 @@
+; DO NOT EDIT (unless you know what you are doing)
+;
+; This subdirectory is a git "subrepo", and this file is maintained by the
+; git-subrepo command. See https://github.com/git-commands/git-subrepo#readme
+;
+[subrepo]
+	remote = git@github.com:eliquid/awesome-local-seo.git
+	branch = master
+	commit = 2cf0d68990b8033575bd2f66dc3b8ae8240a6104
+	parent = 0a88d4a3f4d0efa184621fc5c177365283d3ce6d
+	method = merge
+	cmdver = 0.4.0
