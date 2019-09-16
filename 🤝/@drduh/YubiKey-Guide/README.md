@@ -38,7 +38,7 @@ If you have a comment or suggestion, please open an [Issue](https://github.com/d
   * [(Optional) Save public key for identity file configuration](#-optional--save-public-key-for-identity-file-configuration)
   * [Connect with public key authentication](#connect-with-public-key-authentication)
   * [Import SSH keys](#import-ssh-keys)
-  * [Remote Machines (agent forwarding)](#remote-machines--agent-forwarding-)
+  * [Remote Machines (Agent Forwarding)](#remote-machines--agent-forwarding-)
   * [GitHub](#github)
   * [OpenBSD](#openbsd)
   * [Windows](#windows)
@@ -162,9 +162,11 @@ Boot the OS image and configure networking.
 
 **Note** If the screen locks, unlock with `user`/`live`.
 
-Open the terminal and install several required packages:
+Open the terminal and install required software packages.
 
 **Debian/Ubuntu**
+
+**Note** Live Ubuntu images [may require modification](https://github.com/drduh/YubiKey-Guide/issues/116) to `/etc/apt/sources.list`
 
 ```console
 $ sudo apt update && sudo apt install -y \
@@ -225,7 +227,7 @@ Most operating systems use software-based pseudorandom number generators. A hard
 Install and configure OneRNG software:
 
 ```console
-$ sudo apt-get install -y \
+$ sudo apt install -y \
     at rng-tools python-gnupg openssl
 
 $ wget https://github.com/OneRNG/onerng.github.io/raw/master/sw/onerng_3.6-1_all.deb
@@ -414,6 +416,26 @@ Export the key ID as a [variable](https://stackoverflow.com/questions/1158091/de
 
 ```console
 $ export KEYID=0xFF3E7D88647EBCDB
+```
+
+# Sign with an existing key (optional)
+
+If you already have a pgp key you may want to sign your new key
+with the old one to help prove that your new key is infact controlled
+by you.
+
+Export your existing key to move it to the working keyring.  From a
+different terminal do:
+
+```console
+$ gpg --export-secret-keys --armor --output /tmp/new.sec
+```
+
+to export your old key and then
+
+
+```console
+$ gpg  --default-key $OLDKEY --sign-key $KEYID
 ```
 
 # Sub-keys
@@ -623,6 +645,70 @@ Finish by saving the keys.
 gpg> save
 ```
 
+## Add extra emails
+
+```console
+gpg> adduid
+Real name: Dr Duh
+Email address: DrDuh@other.org
+Comment:
+You selected this USER-ID:
+    "Dr Duh <DrDuh@other.org>"
+
+sec  rsa4096/0xFF3E7D88647EBCDB
+    created: 2017-10-09  expires: never       usage: SC
+    trust: ultimate      validity: ultimate
+ssb  rsa4096/0xBECFA3C1AE191D15
+    created: 2017-10-09  expires: never       usage: S
+ssb  rsa4096/0x5912A795E90DD2CF
+    created: 2017-10-09  expires: never       usage: E
+ssb  rsa4096/0x3F29127E79649A3D
+    created: 2017-10-09  expires: never       usage: A
+[ultimate] (1). Dr Duh <doc@duh.to>
+[ unknown] (2). Dr Duh <DrDuh@other.org>
+
+
+gpg> trust
+sec  rsa4096/0xFF3E7D88647EBCDB
+    created: 2017-10-09  expires: never       usage: SC
+    trust: ultimate      validity: ultimate
+ssb  rsa4096/0xBECFA3C1AE191D15
+    created: 2017-10-09  expires: never       usage: S
+ssb  rsa4096/0x5912A795E90DD2CF
+    created: 2017-10-09  expires: never       usage: E
+ssb  rsa4096/0x3F29127E79649A3D
+    created: 2017-10-09  expires: never       usage: A
+[ultimate] (1). Dr Duh <doc@duh.to>
+[ unknown] (2). Dr Duh <DrDuh@other.org>
+
+Please decide how far you trust this user to correctly verify other users' keys
+(by looking at passports, checking fingerprints from different sources, etc.)
+
+  1 = I don't know or won't say
+  2 = I do NOT trust
+  3 = I trust marginally
+  4 = I trust fully
+  5 = I trust ultimately
+  m = back to the main menu
+
+Your decision? 5
+Do you really want to set this key to ultimate trust? (y/N) y
+
+sec  rsa4096/0xFF3E7D88647EBCDB
+    created: 2017-10-09  expires: never       usage: SC
+    trust: ultimate      validity: ultimate
+ssb  rsa4096/0xBECFA3C1AE191D15
+    created: 2017-10-09  expires: never       usage: S
+ssb  rsa4096/0x5912A795E90DD2CF
+    created: 2017-10-09  expires: never       usage: E
+ssb  rsa4096/0x3F29127E79649A3D
+    created: 2017-10-09  expires: never       usage: A
+[ultimate] (1). Dr Duh <doc@duh.to>
+[ unknown] (2). Dr Duh <DrDuh@other.org>
+
+gpg> save
+```
+
 # Verify
 
 List the generated secret keys and verify the output:
@@ -666,9 +752,9 @@ $ gpg --armor --export-secret-subkeys $KEYID > $GNUPGHOME/sub.key
 On Windows, note that using any extension other than `.gpg` or attempting IO redirection to a file will garble the secret key, making it impossible to import it again at a later date:
 
 ```console
-$ gpg --armor --export-secret-keys $KEYID -o \path\to\dir\mastersub.gpg
+$ gpg -o \path\to\dir\mastersub.gpg --armor --export-secret-keys $KEYID
 
-$ gpg --armor --export-secret-subkeys $KEYID -o \path\to\dir\sub.gpg
+$ gpg -o \path\to\dir\sub.gpg --armor --export-secret-subkeys $KEYID
 ```
 
 # Backup
@@ -841,7 +927,7 @@ $ gpg --armor --export $KEYID | sudo tee /mnt/public/$KEYID-$(date +%F).txt
 Windows:
 
 ```console
-$ gpg --armor --export $KEYID -o \path\to\dir\pubkey.gpg
+$ gpg -o \path\to\dir\pubkey.gpg --armor --export $KEYID
 ```
 
 **Optional** Upload the public key to a [public keyserver](https://debian-administration.org/article/451/Submitting_your_GPG_key_to_a_keyserver):
@@ -1241,11 +1327,12 @@ Install the required packages and mount the non-encrypted volume created earlier
 **Linux**
 
 ```console
-$ sudo apt-get update && sudo apt-get install -y \
+$ sudo apt update && sudo apt install -y \
      gnupg2 gnupg-agent gnupg-curl scdaemon pcscd
 
 $ sudo mount /dev/sdb2 /mnt
 ```
+
 **OpenBSD**
 
 ```console
@@ -1254,7 +1341,7 @@ $ doas pkg_add gnupg pcsc-tools
 $ doas mount /dev/sd2b /mnt
 ```
 
-Import the key:
+Import the public key:
 
 ```console
 $ gpg --import /mnt/pubkey.txt
@@ -1312,7 +1399,7 @@ sub  4096R/0x3F29127E79649A3D  created: 2017-10-09  expires: 2018-10-09  usage: 
 gpg> quit
 ```
 
-Remove and re-insert the YubiKey and check the status:
+Remove and re-insert YubiKey and check the status:
 
 ```console
 $ gpg --card-status
@@ -1350,7 +1437,7 @@ ssb>  4096R/0x3F29127E79649A3D  created: 2017-10-09  expires: 2018-10-09
 
 **Note** If you see `General key info..: [none]` in the output instead - go back and import the public key using the previous step.
 
-Encrypt a message to your own key (useful for storing passwords and other credentials):
+Encrypt a message to your own key (useful for storing password credentials and other data):
 
 ```console
 $ echo "test message string" | gpg --encrypt --armor --recipient $KEYID -o encrypted.txt
@@ -1502,7 +1589,7 @@ Add these to the shell `rc` file:
 ```console
 export GPG_TTY="$(tty)"
 export SSH_AUTH_SOCK="/run/user/$UID/gnupg/S.gpg-agent.ssh"
-gpg-connect-agent updatestartuptty /bye
+gpg-connect-agent updatestartuptty /bye > /dev/null
 ```
 
 On some systems, you may need to use the following instead:
@@ -1604,9 +1691,11 @@ $ ssh-add -E md5 -l
 
 When using the key `pinentry` will be invoked to request the key's passphrase. The passphrase will be cached for up to 10 minutes idle time between uses, to a maximum of 2 hours.
 
-## Remote Machines (agent forwarding)
+## Remote Machines (Agent Forwarding)
 
-If you want to use YubiKey to sign a git commit on a remote machine, or ssh through another layer, then this is possible using Agent Forwarding.
+**Note** SSH Agent Forwarding can [add additional risk](https://matrix.org/blog/2019/05/08/post-mortem-and-remediations-for-apr-11-security-incident/#ssh-agent-forwarding-should-be-disabled) - proceed with caution!
+
+To use YubiKey to sign a git commit on a remote host, or ssh through another network, configure and use Agent Forwarding.
 
 To do this, you need access to the remote machine and the YubiKey has to be set up on the host machine.
 
@@ -1837,6 +1926,8 @@ By default, YubiKey will perform encryption, signing and authentication operatio
 
 To require a touch for each key operation, install [YubiKey Manager](https://developers.yubico.com/yubikey-manager/) and recall the Admin PIN:
 
+**Note** Older versions of the YubiKey Manager used `touch` instead of `set-touch` in the below commands.
+
 Authentication:
 
 ```console
@@ -1860,6 +1951,41 @@ YubiKey will blink when it is waiting for a touch.
 # Email
 
 GPG keys on YubiKey can be used with ease to encrypt and/or sign emails and attachments using [Thunderbird](https://www.thunderbird.net/) and [Enigmail](https://www.enigmail.net). Thunderbird supports OAuth 2 authentication and can be used with Gmail. See [this guide](https://ssd.eff.org/en/module/how-use-pgp-linux) from EFF for detailed instructions.
+
+## mailvelope on MacOS
+
+[Mailvelope](https://www.mailvelope.com/en) allows GPG keys on YubiKey to be used with Gmail and others.
+
+On MacOS install gpgme using homebrew:
+```console
+$ brew install gpgme
+```
+
+To allow Chrome to run gpgme:
+```console
+$ nano ~/Library/Application\ Support/Google/Chrome/NativeMessagingHosts/gpgmejson.json
+```
+and paste:
+```json
+{
+    "name": "gpgmejson",
+    "description": "Integration with GnuPG",
+    "path": "/usr/local/bin/gpgme-json",
+    "type": "stdio",
+    "allowed_origins": [
+        "chrome-extension://kajibbejlbohfaggdiogboambcijhkke/"
+    ]
+}
+```
+
+Edit the default path to allow Chrome to find gpg:
+```console
+$ sudo launchctl config user path /usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin
+```
+
+Close Chrome if it is running and reboot your Mac.
+
+Finally install the [mailvelope extension](https://chrome.google.com/webstore/detail/mailvelope/kajibbejlbohfaggdiogboambcijhkke) from the Chrome app store. 
 
 # Reset
 
