@@ -1,0 +1,12 @@
+; DO NOT EDIT (unless you know what you are doing)
+;
+; This subdirectory is a git "subrepo", and this file is maintained by the
+; git-subrepo command. See https://github.com/git-commands/git-subrepo#readme
+;
+[subrepo]
+	remote = git@github.com:marcobiedermann/search-engine-optimization.git
+	branch = master
+	commit = c5d85ca8991b520e83e8d2947eeed19025a38a1e
+	parent = 7ffa720a489ebdd1900b50416ebd335ac5aac917
+	method = merge
+	cmdver = 0.4.0
