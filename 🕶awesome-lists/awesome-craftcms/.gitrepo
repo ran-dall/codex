@@ -1,0 +1,12 @@
+; DO NOT EDIT (unless you know what you are doing)
+;
+; This subdirectory is a git "subrepo", and this file is maintained by the
+; git-subrepo command. See https://github.com/git-commands/git-subrepo#readme
+;
+[subrepo]
+	remote = git@github.com:craftcms/awesome.git
+	branch = master
+	commit = 0f6cd2c684459f0ea8d6279bb643e93fb1461d2e
+	parent = 6949515c838cb600a7de3c2588bcf2d550b27148
+	method = merge
+	cmdver = 0.4.0
