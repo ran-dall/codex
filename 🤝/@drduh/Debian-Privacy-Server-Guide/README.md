@@ -46,11 +46,15 @@ $ gcloud config set project $PROJECT
 Set the `INSTANCE`, `NETWORK`, [`TYPE`](https://cloud.google.com/compute/docs/machine-types), and [`ZONE`](https://cloud.google.com/compute/docs/regions-zones/) variables, as well as a recent `IMAGE`:
 
 ```console
-$ INSTANCE=debian-privsec-standard
+$ INSTANCE=$(tr -dc '[:lower:]' < /dev/urandom | fold -w10 | head -n1)
+
 $ NETWORK=debian-privsec-net
+
 $ TYPE=n1-standard-1
+
 $ ZONE=us-east1-a
-$ IMAGE=$(gcloud compute images list | grep debian | awk '{print $1}')
+
+$ IMAGE=$(gcloud compute images list | grep debian-10 | awk '{print $1}')
 ```
 
 Create a new network:
@@ -63,7 +67,7 @@ Create an instance:
 
 ```console
 $ gcloud compute --project=$PROJECT instances create $INSTANCE --zone=$ZONE --subnet=$NETWORK \
-  --machine-type=$TYPE --network-tier=PREMIUM --can-ip-forward --no-restart-on-failure --maintenance-policy=MIGRATE \
+  --machine-type=$TYPE --network-tier=PREMIUM --can-ip-forward --maintenance-policy=MIGRATE \
   --no-service-account --no-scopes --image=$IMAGE --image-project=debian-cloud \
   --boot-disk-size=40GB --boot-disk-type=pd-standard --boot-disk-device-name=$INSTANCE
 ```
@@ -73,12 +77,13 @@ You may need to set the billing account using the Web UI, enable the Compute API
 Add a firewall rule for remote access to your assigned netblock:
 
 ```console
-$ gcloud compute firewall-rules create ssh-tcp-22 --network $NETWORK --allow tcp:22 --source-ranges $(whois $(curl -s https://icanhazip.com) | grep CIDR | awk '{print $2}')
+$ gcloud compute firewall-rules create ssh-tcp-22 --network $NETWORK \
+  --allow tcp:22 --source-ranges $(whois $(curl -s https://icanhazip.com) | grep CIDR | head -n1 | awk '{print $2}')
 ```
 
 ## Update domain records
 
-Once you have an *External IP* assigned, you may want to configure a DNS record. To do so, go to Networking > [Cloud DNS](https://console.cloud.google.com/networking/dns/zones) and select **Create Zone** to create a new DNS zone.
+Once an *External IP* is assigned, you may want to configure a DNS record. To do so, go to Networking > [Cloud DNS](https://console.cloud.google.com/networking/dns/zones) and select **Create Zone** to create a new DNS zone.
 
 Create an [A record](https://support.dnsimple.com/articles/a-record/) for the domain by selecting **Add Record Set**:
 
@@ -127,14 +132,14 @@ Where `sysadm` is the desired username on the instance.
 Create a temporary file in [metadata format](https://cloud.google.com/compute/docs/instances/adding-removing-ssh-keys):
 
 ```console
-$ echo -n "sysadm:" ; cat ~/.ssh/duh.pub > /tmp/ssh-public-key
+$ (echo -n "sysadm:" ; cat ~/.ssh/duh.pub) > /tmp/ssh-public-key
 sysadm:ssh-rsa AAAAB3Nza[...]
 ```
 
 Update instance metadata:
 
 ```console
-$ gcloud compute instances add-metadata debian-privsec-standard --metadata-from-file ssh-keys=/tmp/ssh-public-key
+$ gcloud compute instances add-metadata $INSTANCE --zone=$ZONE --metadata-from-file ssh-keys=/tmp/ssh-public-key
 ```
 
 ## Connect
@@ -166,13 +171,13 @@ See [YubiKey Guide](https://github.com/drduh/YubiKey-Guide) to secure SSH keys.
 Install pending updates:
 
 ```console
-$ sudo apt-get update && sudo apt-get upgrade -y
+$ sudo apt update && sudo apt upgrade -y
 ```
 
 Install any necessary software, for example:
 
 ```console
-$ sudo apt-get -y install \
+$ sudo apt -y install \
   zsh vim tmux dnsutils whois \
   git gcc autoconf make \
   lsof tcpdump htop tree \
@@ -222,7 +227,8 @@ Or [customize your own](https://www.freebsd.org/cgi/man.cgi?query=sshd_config&se
 Update firewall rules to allow the new SSH port:
 
 ```console
-$ gcloud compute firewall-rules create ssh-tcp-2222 --network $NETWORK --allow tcp:2222 --source-ranges --source-ranges $(whois $(curl -s https://icanhazip.com) | grep CIDR | awk '{print $2}')
+$ gcloud compute firewall-rules create ssh-tcp-2222 --network $NETWORK \
+  --allow tcp:2222 --source-ranges $(whois $(curl -s https://icanhazip.com) | grep CIDR | head -n1 | awk '{print $2}')
 ```
 
 Do not exit the current SSH session yet; first make sure you can still connect!
@@ -243,7 +249,7 @@ Host duh
   Port 2222
 ```
 
-Start a new SSH session. Verify the new key fingerprint:
+Start a new SSH session. The new key fingerprint will require verification:
 
 ```console
 $ ssh duh
@@ -266,7 +272,7 @@ $ ssh-keygen -E md5 -lf /etc/ssh/ssh_host_key.pub
 4096 19:de:..:fe:58:3a /etc/ssh/ssh_host_key.pub (RSA)
 ```
 
-If the fingerprint matches, exit the original SSH session.
+If the fingerprint matches the local file version, exit the original SSH session.
 
 ### tmux
 
@@ -288,7 +294,7 @@ Run `tmux` and open a new tab with `` `-c `` or specified keyboard shortcut.
 
 When you reconnect to the instance, type `tmux attach -t <session name>` (or `tmux a` for short) to select a session to "attach" to (default name is "0"; use `` `-$ `` to rename).
 
-**Note** If you're using the st terminal and receive the error `open terminal failed: missing or unsuitable terminal: st-256color`, copy the file `st.info` from st's build directory to the instance and run `tic st.info`.
+**Note** If you're using the st terminal and receive the error `open terminal failed: missing or unsuitable terminal: st-256color`, copy the file `st.info` from the st build directory to the instance and run `tic st.info`.
 
 ### Zsh
 
@@ -333,7 +339,7 @@ Or [customize your own vimrc](https://stackoverflow.com/questions/164847/what-is
 Install Dnsmasq:
 
 ```console
-$ sudo apt-get -y install dnsmasq
+$ sudo apt -y install dnsmasq
 ```
 
 Use my [configuration](https://github.com/drduh/config/blob/master/dnsmasq.conf) and blocklist(s):
@@ -346,7 +352,7 @@ $ cat ~/config/domains/* | sudo tee -a /etc/dnsmasq.conf
 
 Or [customize your own](http://www.thekelleys.org.uk/dnsmasq/docs/dnsmasq-man.html).
 
-Pick an upstream name server by uncommenting a line in /etc/dnsmasq.conf or use Google resolvers:
+Pick an upstream name server by uncommenting a line in `/etc/dnsmasq.conf` or use Google resolvers:
 
 ```console
 $ echo "nameserver 169.254.169.254" | sudo tee /etc/resolv.dnsmasq
@@ -359,7 +365,7 @@ nameserver 169.254.169.254
 $ curl https://raw.githubusercontent.com/StevenBlack/hosts/master/hosts | sudo tee /etc/dns-blocklist
 ```
 
-Append any additional lists, for example:
+Append any additional lists, such as `social-hosts`:
 
 ```console
 $ curl https://raw.githubusercontent.com/Sinfonietta/hostfiles/master/social-hosts | sudo tee --append /etc/dns-blocklist
@@ -387,7 +393,7 @@ $ sudo service dnsmasq restart
 Check the log to make sure it is running:
 
 ```console
-$ sudo tail -F /tmp/dnsmasq
+$ sudo tail -F /tmp/dns
 started, version 2.76 cachesize 2000
 compile time options: IPv6 GNU-getopt DBus i18n IDN DHCP DHCPv6 no-Lua TFTP conntrack ipset auth DNSSEC loop-detect inotify
 compile time options: IPv6 GNU-getopt DBus i18n IDN DHCP DHCPv6 no-Lua TFTP conntrack ipset auth DNSSEC loop-detect inotify
@@ -422,7 +428,7 @@ $ dig +short a google.to @127.0.0.1
 To configure a private or public DNSCrypt server, first install [libsodium](https://github.com/jedisct1/libsodium) and [libevent](https://libevent.org/):
 
 ```console
-$ sudo apt-get -y install libsodium-dev libevent-dev
+$ sudo apt -y install libsodium-dev libevent-dev
 ```
 
 Clone the DNSCrypt-Wrapper repository, make and install the software:
@@ -446,7 +452,7 @@ $ mkdir ~/dnscrypt-keys
 
 $ cd ~/dnscrypt-keys
 
-$ cp ../config/scripts/dnscrypt.sh .
+$ cp ~/config/scripts/dnscrypt.sh .
 
 $ chmod +x dnscrypt.sh
 
@@ -458,7 +464,8 @@ Copy the `sdns://` line to a client. To use a port other than 443, use https://d
 Update firewall rules to allow the new port:
 
 ```console
-$ gcloud compute firewall-rules create dnscrypt-udp-443 --network $NETWORK --allow udp:443 --source-ranges $(whois $(curl -s https://icanhazip.com) | grep CIDR | awk '{print $2}')
+$ gcloud compute firewall-rules create dnscrypt-udp-443 --network $NETWORK \
+  --allow udp:443 --source-ranges $(whois $(curl -s https://icanhazip.com) | grep CIDR | head -n1 | awk '{print $2}')
 ```
 
 On a client, edit `dnscrypt-proxy.toml` to include the server stamp:
@@ -515,7 +522,7 @@ $ git clone https://github.com/jedisct1/dnscrypt-proxy
 
 $ cd dnscrypt-proxy/utils/generate-domains-blacklists
 
-$ python2 generate-domains-blacklist.py > blacklist
+$ python generate-domains-blacklist.py > blacklist.$(date +%F)
 Loading data from [file:domains-blacklist-local-additions.txt]
 Loading data from [https://easylist-downloads.adblockplus.org/antiadblockfilters.txt]
 [...]
@@ -523,7 +530,7 @@ Loading data from [https://raw.githubusercontent.com/notracking/hosts-blocklists
 Loading data from [file:domains-time-restricted.txt]
 Loading data from [file:domains-whitelist.txt]
 
-$ mv blacklist ~/build/linux-x86_64/blacklist.txt
+$ cp blacklist.$(date +%F) ~/build/linux-x86_64/blacklist.txt
 
 $ wc -l blacklist.txt
 117838 blacklist.txt
@@ -536,7 +543,7 @@ $ wc -l blacklist.txt
 Install Privoxy on the remote host:
 
 ```console
-$ sudo apt-get -y install privoxy
+$ sudo apt -y install privoxy
 ```
 
 Use my [configuration](https://github.com/drduh/config/blob/master/privoxy):
@@ -567,7 +574,9 @@ Expires: Sat, 17 Jun 2000 12:00:00 GMT
 Pragma: no-cache
 ```
 
-Clients can use the remote proxy with [Secure Shell tunneling](https://en.wikipedia.org/wiki/Tunneling_protocol), also known as a ["poor man's VPN"](https://www.linuxjournal.com/content/ssh-tunneling-poor-techies-vpn) (**Note** `AllowTcpForwarding yes` must be enabled in `/etc/ssh/sshd_config` on the server to use these features, followed by `sudo service ssh restart`).
+Clients can use the remote proxy with [Secure Shell tunneling](https://en.wikipedia.org/wiki/Tunneling_protocol), also known as a ["poor man's VPN"](https://www.linuxjournal.com/content/ssh-tunneling-poor-techies-vpn)
+
+**Note** `AllowTcpForwarding yes` must be enabled in `/etc/ssh/sshd_config` on the server to use these features, followed by `sudo service ssh restart`.
 
 ```console
 $ ssh -NCL 5555:127.0.0.1:8118 duh
@@ -606,15 +615,21 @@ $ curl --proxy socks5h://127.0.0.1:7000 https://icanhazip.com/
 [Install Tor](https://www.torproject.org/docs/tor-relay-debian.html.en) on the server - by default Tor does **not** relay nor exit traffic; it only provides a local port for outbound connections.
 
 ```console
-$ sudo apt-get -y install tor
+$ sudo apt -y install tor
 ```
 
-**Optional** Install and configure [anonymizing relay monitor (arm)](https://www.atagar.com/arm/), a terminal-based status monitor for Tor.
+**Optional** Install and configure [nyx](https://nyx.torproject.org/), a terminal-based monitor for Tor.
 
 ```console
-$ sudo apt-get -y install tor-arm
+$ sudo service tor stop
 
-$ sudo arm
+$ sudo apt -y install nyx
+
+$ tor --hash-password qrkxQO628
+
+$ sudo service tor start
+
+$ nyx
 ```
 
 Use my [configuration](https://github.com/drduh/config/blob/master/torrc):
@@ -625,7 +640,7 @@ $ sudo cp ~/config/torrc /etc/tor/torrc
 
 ### DNS over Tor
 
-Tor can listen locally to resolve DNS A, AAAA and PTR records anonymously. To use, add a local address to `/etc/tor/torrc`:
+Tor can resolve DNS A, AAAA and PTR records anonymously. Add a local address to `/etc/tor/torrc`:
     
 ```
 DNSPort 127.26.255.1:53
@@ -640,7 +655,7 @@ Additionally, obfuscate Tor traffic by using [obfsproxy](https://www.torproject.
 To install the latest version of obfs4proxy, first install [Golang](https://golang.org/):
 
 ```console
-$ sudo apt-get -y install golang
+$ sudo apt -y install golang
 ```
 
 Create a temporary directory, [download and build](https://golang.org/cmd/go/) [obfs4proxy](https://gitweb.torproject.org/pluggable-transports/obfs4.git):
@@ -683,17 +698,13 @@ $ echo $?
 0
 
 $ $GOPATH/bin/obfs4proxy -version
-obfs4proxy-0.0.11-dev
+obfs4proxy-0.0.12-dev
 
 $ sudo service tor stop
 
 $ sudo cp $GOPATH/bin/obfs4proxy /usr/local/bin
-```
 
-Secure it:
-
-```console
-$ sudo chown root:root /usr/local/bin/obfs4proxy
+$ sudo chown debian-tor:debian-tor /usr/local/bin/obfs4proxy
 ```
 
 Edit `/etc/tor/torrc` to include:
@@ -712,24 +723,33 @@ Restart Tor:
 $ sudo service tor restart
 ```
 
-Ensure `obfs4proxy` is accepting connections:
+Verify `obfs4proxy` is accepting connections:
 
 ```console
 $ sudo lsof -Pni | grep obfs
 obfs4prox 6507 debian-tor    3u  IPv6  62584      0t0  TCP *:10022 (LISTEN)
 ```
 
-Ensure connections from the server over Tor are possible:
+If obfs4proxy fails to start, check the Tor log. You may need to modify the apparmor profile to include the binary:
+
+```console
+$ tail -n2 /etc/apparmor.d/abstractions/tor
+  /usr/local/bin/obfsproxy PUx,
+  /usr/local/bin/obfs4proxy Pix,
+```
+
+Verify connections on the server itself over Tor are working:
 
 ```console
 $ curl --socks5 127.0.0.1:9050 https://icanhazip.com/
-[tor exit node ip address]
+[a Tor exit node IP address]
 ```
 
-Update firewall rules to allow the new proxy listening port (in this case, TCP port 10022):
+Update firewall rules to allow the new proxy listening port (in this case, TCP port 10022) for your current IP address range:
 
 ```console
-$ gcloud compute firewall-rules create obfs4-tcp-10022 --network $NETWORK --allow tcp:10022 --source-ranges $(whois $(curl -s https://icanhazip.com) | grep CIDR | awk '{print $2}')
+$ gcloud compute firewall-rules create obfs4-tcp-10022 --network $NETWORK --allow tcp:10022 \
+  --source-ranges $(whois $(curl -s https://icanhazip.com) | grep CIDR | head -n1 | awk '{print $2}')
 ```
 
 If Tor did not start, try starting it manually (`sudo` may be required to bind to [privileged ports](https://www.w3.org/Daemon/User/Installation/PrivilegedPorts.html)):
@@ -738,11 +758,14 @@ If Tor did not start, try starting it manually (`sudo` may be required to bind t
 $ tor -f /etc/tor/torrc
 ```
 
-Copy the bridgeline, filling in the IP address and port:
+Copy the bridgeline and complete the external IP address and port number:
 
 ```console
 $ sudo tail -n1 /var/lib/tor/pt_state/obfs4_bridgeline.txt
 Bridge obfs4 <IP ADDRESS>:<PORT> <FINGERPRINT> cert=4ar[...]8FA iat-mode=0
+
+$ echo $(curl -s https://icanhazip.com ; echo : ; sudo lsof -Pni | grep obf | sed -e "s/.*://" -e "s/ .*//") | tr -d " "
+104.197.215.107:10022
 
 $ sudo tail -n1 /var/lib/tor/pt_state/obfs4_bridgeline.txt | awk '{print $1,$2,"104.197.215.107:10022",$(NF-1),$(NF)}'
 Bridge obfs4 104.197.215.107:10022 cert=4ar[...]8FA iat-mode=0
@@ -761,7 +784,7 @@ Using [Tor Browser](https://www.torproject.org/projects/torbrowser.html.en), sel
 
 ### Onion Service
 
-**Optional** To host an [onion service](https://www.torproject.org/docs/onion-services), append something like this to `/etc/tor/torrc` on the server (for example, to use with a Web server):
+**Optional** To host an [Onion Service](https://www.torproject.org/docs/onion-services), append something like this to `/etc/tor/torrc` on the server (for example, to use with a Web server):
 
 ```
 HiddenServiceDir /var/lib/tor/hidden_service/
@@ -787,7 +810,7 @@ To generate a specific .onion hostname, [some](https://security.stackexchange.co
 
 ## Certificates
 
-Create your own [public-key infrastructure](https://security.stackexchange.com/questions/87564/how-does-ssl-tls-pki-work), so that you may use your own keys and certificates for VPN, HTTPS, etc.
+Set up a [public-key infrastructure](https://security.stackexchange.com/questions/87564/how-does-ssl-tls-pki-work) to use your own keys and certificates for VPN, an HTTPS-enabled Web server, etc.
 
 To create a certificate authority, server and client certificates, download the following [script](https://github.com/drduh/config/blob/master/scripts/pki.sh).
 
@@ -848,18 +871,18 @@ You could also use [OpenVPN/easy-rsa](https://github.com/OpenVPN/easy-rsa) or [L
 Starting with the client, install OpenVPN:
 
 ```console
-$ sudo apt-get -y install openvpn
+$ sudo apt -y install openvpn
 ```
 
-Use my [configuration](https://github.com/drduh/config/blob/master/server.ovpn):
+Use my [configuration](https://github.com/drduh/config/blob/master/openvpn/server.ovpn):
 
 ```console
-$ sudo cp ~/config/server.ovpn /etc/openvpn
+$ sudo cp ~/config/openvpn/server.ovpn /etc/openvpn
 ```
 
 Or [customize your own](https://openvpn.net/index.php/open-source/documentation/howto.html#server).
 
-Preferably on the client-side (where there is likely more entropy), generate a [static key](https://openvpn.net/index.php/open-source/documentation/miscellaneous/78-static-key-mini-howto.html) so that only trusted clients can attempt connections (extra authentication on top of TLS):
+Preferably client-side (where there is more entropy available), generate a [static key](https://openvpn.net/index.php/open-source/documentation/miscellaneous/78-static-key-mini-howto.html) so that only trusted clients can attempt connections (extra authentication on top of TLS):
 
 ```console
 $ openvpn --genkey --secret ta.key
@@ -871,18 +894,18 @@ Also client-side, create [Diffie-Hellman key exchange parameters](https://securi
 $ openssl dhparam -dsaparam -out dh.pem 4096
 ```
 
-Copy these files and certificates from the previous section to the server (note, the only *private* key sent is for the server itself):
+Copy the following files from the previous section to the server. Note that the only *private* key sent remotely is for the server itself (`server.key`):
 
 ```console
 $ scp ta.key dh.pem ca.pem server.pem server.key duh:~
 ```
 
-On the server-side, move the files into place:
+On the server, move the files into place:
 
 ```console
 $ sudo mkdir /etc/pki
 
-$ sudo mv ca.pem server.pem server.key dh.pem ta.key /etc/pki
+$ sudo mv ca.pem server.pem server.key dh.pem ta.key /etc/pki/
 
 $ sudo chmod 0400 /etc/pki/server.key /etc/pki/ta.key /etc/pki/dh.pem
 ```
@@ -910,7 +933,7 @@ $ sudo iptables -t nat -A PREROUTING --source 10.8.0.0/16 -p tcp -m tcp --dport 
 Make the firewall rules permanent:
 
 ```console
-$ sudo apt-get -y install iptables-persistent
+$ sudo apt -y install iptables-persistent
 
 $ sudo iptables-save | sudo tee /etc/iptables/rules.v4
 ```
@@ -936,7 +959,6 @@ do_ifconfig, tt->ipv6=0, tt->did_ifconfig_ipv6_setup=0
 /sbin/ip addr add dev tun0 10.8.0.1/24 broadcast 10.8.0.255
 UDPv4 link local (bound): [undef]
 UDPv4 link remote: [undef]
-v=256
 IFCONFIG POOL: base=10.8.0.2 size=252, ipv6=0
 Initialization Sequence Completed
 ```
@@ -945,14 +967,14 @@ If OpenVPN still fails due to unknown ciphers, you may need to install a newer O
 
 Update the remote hosts firewall rules to allow the new VPN listening port (in this case, UDP port 443).
 
-For each connecting device, edit a [client configuration](https://openvpn.net/index.php/open-source/documentation/howto.html#client) using [my configuration](https://github.com/drduh/config/blob/master/client.ovpn):
+For each connecting device, edit a [client configuration](https://openvpn.net/index.php/open-source/documentation/howto.html#client) using [my configuration](https://github.com/drduh/config/blob/master/openvpn/client.ovpn):
 
 ```console
 $ mkdir ~/vpn
 
 $ cd ~/vpn
 
-$ cp ~/config/client.ovpn .
+$ cp ~/config/openvpn/client.ovpn .
 ```
 
 Add the CA certificate, client certificate and client key material to the configuration:
@@ -964,7 +986,7 @@ $ (echo "<ca>" ; cat ~/pki/ca.pem ; echo "</ca>\n<cert>" ; cat ~/pki/client.pem;
 Install and start OpenVPN:
 
 ```console
-$ sudo apt-get -y install openvpn
+$ sudo apt -y install openvpn
 
 $ cd ~/vpn
 
@@ -1037,7 +1059,7 @@ $ curl -4 https://icanhazip.com/
 Install [Lighttpd](https://www.lighttpd.net/) with [ModMagnet](https://redmine.lighttpd.net/projects/1/wiki/Docs_ModMagnet):
 
 ```console
-$ sudo apt-get -y install lighttpd lighttpd-mod-magnet
+$ sudo apt -y install lighttpd lighttpd-mod-magnet
 ```
 
 Use my [configuration](https://github.com/drduh/config/blob/master/lighttpd/lighttpd.conf):
@@ -1106,7 +1128,7 @@ Run your own [XMPP](https://en.wikipedia.org/wiki/XMPP) chat server with [Prosod
 Install Prosody:
 
 ```console
-$ sudo apt-get -y install prosody
+$ sudo apt -y install prosody
 ```
 
 Use my [configuration](https://github.com/drduh/config/blob/master/prosody.cfg.lua) and edit it to suit your needs:
@@ -1172,7 +1194,8 @@ lua5.1     1831    prosody    9u  IPv4 317991      0t0  TCP *:5222 (LISTEN)
 Update firewall rules to allow the new prosody listening ports (in this example, TCP ports 5222 and 5269):
 
 ```console
-$ gcloud compute firewall-rules create xmpp-tcp-5222-5269 --network $NETWORK --allow tcp:5222,tcp:5269 --source-ranges $(curl -s https://icanhazip.com)
+$ gcloud compute firewall-rules create xmpp-tcp-5222-5269 --network $NETWORK \
+  --allow tcp:5222,tcp:5269 --source-ranges $(curl -s https://icanhazip.com)
 ```
 
 Create a new user:
@@ -1206,7 +1229,7 @@ $ dig +short srv _xmpp-client._tcp.duh.to
 To connect from a client, use [Profanity](http://profanity.im/)
 
 ```console
-$ sudo apt-get -y install profanity
+$ sudo apt -y install profanity
 
 $ profanity
 ```
@@ -1257,5 +1280,5 @@ If an error occurs while attempting to connect, check `/var/log/prosody/prosody.
 
 Reboot the instance and make sure everything still works. If not, you'll need to automate certain programs to start up on their own (for example, Privoxy will fail to start if OpenVPN does not first create a tunnel interface to bind to).
 
-With this guide, a secure server with several privacy and security enchancing services can be setup in less than an hour. The server can be used to circumvent firewalls, provide strong encryption and overall improve online experience, all for a low monthly cost (average ~$35 per month for a "standard" instance.) To save money, consider using [Preemptible VM instances](https://cloud.google.com/compute/docs/instances/preemptible) which can be started right back up with a script.
+With this guide, a secure server with several privacy- and security-enhancing services can be setup in less than an hour. The server can be used to circumvent firewalls, provide strong encryption and overall improve online experience, all for a low monthly cost (average ~$35 per month for a "standard" instance.) To save money, consider using [Preemptible VM instances](https://cloud.google.com/compute/docs/instances/preemptible) which can be started right back up with a script.
 
