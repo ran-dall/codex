@@ -1,0 +1,12 @@
+; DO NOT EDIT (unless you know what you are doing)
+;
+; This subdirectory is a git "subrepo", and this file is maintained by the
+; git-subrepo command. See https://github.com/git-commands/git-subrepo#readme
+;
+[subrepo]
+	remote = git@github.com:postlight/awesome-cms.git
+	branch = master
+	commit = c906c700a70db55e0d3a8f679db0cc1a1cfafaaa
+	parent = 1ed686b861b63fa950bb8e15eca7e262d56621bc
+	method = merge
+	cmdver = 0.4.0
