@@ -1,0 +1,12 @@
+; DO NOT EDIT (unless you know what you are doing)
+;
+; This subdirectory is a git "subrepo", and this file is maintained by the
+; git-subrepo command. See https://github.com/git-commands/git-subrepo#readme
+;
+[subrepo]
+	remote = git@github.com:n370/awesome-headless-cms.git
+	branch = master
+	commit = 0d56ad08507ed203ec69d0d6b39075e70b39954c
+	parent = 1ba9c054f1d79fd8daf22b6932584f06d7b36563
+	method = merge
+	cmdver = 0.4.0
