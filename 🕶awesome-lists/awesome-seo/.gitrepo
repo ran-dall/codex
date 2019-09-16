@@ -1,0 +1,12 @@
+; DO NOT EDIT (unless you know what you are doing)
+;
+; This subdirectory is a git "subrepo", and this file is maintained by the
+; git-subrepo command. See https://github.com/git-commands/git-subrepo#readme
+;
+[subrepo]
+	remote = git@github.com:teles/awesome-seo.git
+	branch = master
+	commit = a24940424ee5970393f08c9d5d7fb57fa2e59657
+	parent = 4d058acc785b13d2f8e80ee28a08c2f0f8e07e4d
+	method = merge
+	cmdver = 0.4.0
