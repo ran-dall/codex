@@ -1,0 +1,12 @@
+; DO NOT EDIT (unless you know what you are doing)
+;
+; This subdirectory is a git "subrepo", and this file is maintained by the
+; git-subrepo command. See https://github.com/git-commands/git-subrepo#readme
+;
+[subrepo]
+	remote = git@github.com:domenicosolazzo/awesome-okr.git
+	branch = master
+	commit = f7bc70523e59fd087ceea6fe4c6e7fab685b9bd8
+	parent = 3e9fe62129f017c9bd4e08b360c7aa8d42a4521b
+	method = merge
+	cmdver = 0.4.0
