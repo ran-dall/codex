@@ -6,7 +6,7 @@
 [subrepo]
 	remote = git@github.com:drduh/macOS-Security-and-Privacy-Guide.git
 	branch = master
-	commit = 3d575b78c7ebe6899844fd9f1ad30745febce1c2
-	parent = 3a92a41230be5325f8d8115fab4469832f248a80
+	commit = 3027c99c7e47db6d5bb73ff6fae3e1f3983350e5
+	parent = 40a5098b58793179a247fbd67854058cbd8ca1cd
 	method = rebase
 	cmdver = 0.4.0
