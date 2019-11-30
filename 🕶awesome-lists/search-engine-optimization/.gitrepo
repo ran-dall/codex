@@ -6,7 +6,7 @@
 [subrepo]
 	remote = git@github.com:marcobiedermann/search-engine-optimization.git
 	branch = master
-	commit = c5d85ca8991b520e83e8d2947eeed19025a38a1e
-	parent = 7ffa720a489ebdd1900b50416ebd335ac5aac917
+	commit = a9757ac395b744ac9bda96dcc08c5a907b2ed1e5
+	parent = d22200b68b41acf16bd87aade716609e2f3a33b6
 	method = merge
 	cmdver = 0.4.0
