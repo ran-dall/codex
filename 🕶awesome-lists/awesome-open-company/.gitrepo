@@ -6,7 +6,7 @@
 [subrepo]
 	remote = git@github.com:opencompany/awesome-open-company.git
 	branch = master
-	commit = 781bf0cf3e65631d1637d97dec366e179a55c819
-	parent = d6bc5b8072ba950007763897fb06245bb53f6fe3
+	commit = a8400fc7957c168cc8cf37465343c55dc24afd0d
+	parent = 6d9f8ef997b96857581ccc0a9b53e44a92009046
 	method = merge
 	cmdver = 0.4.0
