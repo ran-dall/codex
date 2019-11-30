@@ -6,7 +6,7 @@
 [subrepo]
 	remote = git@github.com:craftcms/awesome.git
 	branch = master
-	commit = 0f6cd2c684459f0ea8d6279bb643e93fb1461d2e
-	parent = 6949515c838cb600a7de3c2588bcf2d550b27148
+	commit = 274fa6512077f140f315116284e61af2c57af2c5
+	parent = 769c817a7044dcece964b89c2229d19f9043a43b
 	method = merge
 	cmdver = 0.4.0
