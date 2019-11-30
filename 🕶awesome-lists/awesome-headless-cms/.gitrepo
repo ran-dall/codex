@@ -6,7 +6,7 @@
 [subrepo]
 	remote = git@github.com:n370/awesome-headless-cms.git
 	branch = master
-	commit = 0d56ad08507ed203ec69d0d6b39075e70b39954c
-	parent = 1ba9c054f1d79fd8daf22b6932584f06d7b36563
+	commit = dd7c19dc620639d5c1f46bfaec5247132114c69a
+	parent = 7e7a6fd62a8c3995be359e01f86e29b12741ef9e
 	method = merge
 	cmdver = 0.4.0
