@@ -1,12 +1,16 @@
 # https://github.com/drduh/config/blob/master/install.debian
+adb
 apt-transport-https
+arduino
 at
 auditd
 autoconf
 binwalk
 bison
 build-essential
+chirp
 cmake
+cpufrequtils
 cryptsetup
 curl
 dirmngr
@@ -21,9 +25,12 @@ gcc
 git
 gnupg-agent
 gnupg2
+gpredict
+hackrf
 hopenpgp-tools
 hostapd
 htop
+iotop
 iperf
 iptables
 iptables-persistent
@@ -47,7 +54,6 @@ lsof
 m4
 macchanger
 make
-man-db
 minicom
 motion
 mpv
@@ -56,6 +62,7 @@ net-tools
 netcat
 nmap
 ntp
+openjdk-8-jdk-headless
 openssl
 parted
 pciutils
@@ -63,6 +70,7 @@ pciutils-dev
 pcsc-tools
 pcscd
 pkg-config
+poppler-utils
 privoxy
 proxychains
 pylint
@@ -70,12 +78,14 @@ python-gnupg
 python-pil
 python-pip
 python-pyscard
+python3-pip
 qemu
 qemu-system-x86
 radare2
 rename
 rng-tools
 rsync
+rtl-sdr
 scdaemon
 scrot
 secure-delete

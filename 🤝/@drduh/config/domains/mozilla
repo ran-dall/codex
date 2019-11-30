@@ -1,4 +1,8 @@
 #address=/firefox.com/
+#address=/mozaws.net/
+#address=/mozilla.com/
+#address=/mozilla.net/
+#address=/mozilla.org/
 address=/accounts.firefox.com/
 address=/blocked.cdn.mozilla.net/
 address=/blocklist.addons.mozilla.org/
@@ -10,7 +14,6 @@ address=/fhr.cdn.mozilla.net/
 address=/getpocket.com/
 address=/getpocket-cdn.prod.mozaws.net/
 address=/getpocket.cdn.mozilla.net/
-address=/incoming.telemetry.mozilla.org/
 address=/input.mozilla.org/
 address=/install.mozilla.org/
 address=/mozorg.cdn.mozilla.net/
