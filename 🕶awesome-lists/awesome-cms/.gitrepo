@@ -6,7 +6,7 @@
 [subrepo]
 	remote = git@github.com:postlight/awesome-cms.git
 	branch = master
-	commit = 47e1db100bae71478ed7c07ff0a5d2f5cb1d1564
-	parent = 79d9c6473a56216747587fb75d9d8f5fd17172e6
+	commit = d701a866cf2285d8533a8fd6c83e86445679f21d
+	parent = 92e009ead778fe0f2517ebc925c15000a97aa087
 	method = merge
 	cmdver = 0.4.0
