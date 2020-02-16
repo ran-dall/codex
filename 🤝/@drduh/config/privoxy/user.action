@@ -93,8 +93,9 @@ ads.*.com/
 ads2.
 adserver.
 analytics.*.
+emailtrk.*
 log.pinterest.com
-pixel.redditmedia.com
+pixel.*
 
 { +block{image} +handle-as-image }
 /.*1x1.*
@@ -150,7 +151,6 @@ google.com/amp/s/.*
 .aexp-static.com
 .alternet.org
 .amazon.com
-.amazontrust.com
 .americanexpress.com
 .android.com
 .answers.com
@@ -165,6 +165,7 @@ google.com/amp/s/.*
 .asus.com
 .auspost.com.au
 .auth0.com
+.awesomeopensource.com
 .awsstatic.com
 .bankofamerica.com
 .bbc.com
@@ -180,6 +181,7 @@ google.com/amp/s/.*
 .bootstrapcdn.com
 .boum.org
 .britishcouncil.org
+.byexamples.com
 .ca.gov
 .cbc.ca
 .cbsnews.com
@@ -195,6 +197,9 @@ google.com/amp/s/.*
 .cloudflare.com
 .cloudfront.net
 .cnet.com
+.cnn.com
+.cnn.io
+.comcast.net
 .congress.gov
 .coreboot.org
 .cpb.gov
@@ -220,6 +225,7 @@ google.com/amp/s/.*
 .economist.com
 .edgekey.net
 .edx.org
+.eff.org
 .emacswiki.org
 .etsy.com
 .etsystatic.com
@@ -229,6 +235,7 @@ google.com/amp/s/.*
 .fbi.gov
 .fbinaa.org
 .fda.gov
+.fedex.com
 .flickr.com
 .flickr.net
 .foreignpolicy.com
@@ -250,19 +257,18 @@ google.com/amp/s/.*
 .gnu.org
 .gnupg.org
 .godoc.org
+.golang.com
 .golang.org
 .goo.gl
 .google.ca
 .google.com
 .google.co.uk
 .google.de
-.googleadservices.com
+.google.net
 .googleapis.com
 .googlecode.com
 .googlemail.com
 .googlesource.com
-.googlesyndication.com
-.googletagservices.com
 .googleusercontent.com
 .googlevideo.com
 .governmentattic.org
@@ -276,6 +282,7 @@ google.com/amp/s/.*
 .homedepot.com
 .house.gov
 .houzz.com
+.hulu.com
 .iana.org
 .ibm.com
 .icanhazip.com
@@ -329,6 +336,7 @@ google.com/amp/s/.*
 .mozilla.net
 .mozilla.org
 .msi.com
+.nasa.gov
 .nationalreview.com
 .ncbi.nlm.nih.gov
 .netdna-ssl.com
@@ -349,6 +357,7 @@ google.com/amp/s/.*
 .openstreetmap.org
 .openvpn.net
 .openvpn.org
+.optoutprescreen.com
 .parallels.com
 .paypal.com
 .pcengines.ch
@@ -380,6 +389,7 @@ google.com/amp/s/.*
 .rottentomatoes.com
 .rust-lang.org
 .s3.amazonaws.com
+.salesforce.com
 .schwab.com
 .scribd.com
 .scribdassets.com
@@ -422,12 +432,14 @@ google.com/amp/s/.*
 .tonic.to
 .torproject.org
 .tripadvisor.com
+.trulia.com
 .tumblr.com
 .turbotax.com
 .twimg.com
 .twitter.com
 .typepad.com
 .ubuntuforums.org
+.uhaul.com
 .undeadly.org
 .unicef.org
 .ups.com
@@ -465,6 +477,7 @@ google.com/amp/s/.*
 .wordpress.org
 .wp.com
 .wsj.com
+.xfinity.com
 .yahoo.com
 .ycombinator.com
 .yelpcdn.com
@@ -475,6 +488,8 @@ google.com/amp/s/.*
 .ytimg.com
 .yubico.com
 .zappos.com
+.zillow.com
+.zillowstatic.com
 cdn.openbsd.org
 cvsweb.openbsd.org
 ftp.openbsd.org

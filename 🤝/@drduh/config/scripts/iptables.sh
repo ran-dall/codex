@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # https://github.com/drduh/config/blob/master/scripts/iptables.sh
-PATH='/sbin'
+PATH="/sbin"
 EXT=enp1s0
 INT=enp2s0
 DMZ=enp3s0
@@ -30,8 +30,8 @@ echo "Allow established and related connections"
 iptables -A INPUT -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
 iptables -A OUTPUT -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
 iptables -A FORWARD -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
-echo "Allow ping replies"
-iptables -A INPUT -p icmp -m icmp --icmp-type 8 -m conntrack --ctstate NEW -j ACCEPT
+#echo "Allow ping replies"
+#iptables -A INPUT -p icmp -m icmp --icmp-type 8 -m conntrack --ctstate NEW -j ACCEPT
 echo "Allow DHCP"
 iptables -I INPUT -i $INT -p udp -m udp --dport 67 -m conntrack --ctstate NEW -j ACCEPT
 iptables -I INPUT -i $DMZ -p udp -m udp --dport 67 -m conntrack --ctstate NEW -j ACCEPT
@@ -77,6 +77,10 @@ iptables -A OUTPUT -o $EXT -p udp -d 0.0.0.0/0 -j ACCEPT
 #iptables -A OUTPUT -o $EXT -d 0.0.0.0/0 -p tcp --dport 80 -j ACCEPT
 #echo "Allow outgoing HTTPS"
 #iptables -A OUTPUT -o $EXT -d 0.0.0.0/0 -p tcp --dport 443 -j ACCEPT
+#echo "Allow outgoing SMTP"
+#iptables -A OUTPUT -o $EXT -d 0.0.0.0/0 -p tcp --dport 465 -j ACCEPT
+#echo "Allow outgoing IMAP"
+#iptables -A OUTPUT -o $EXT -d 0.0.0.0/0 -p tcp --dport 993 -j ACCEPT
 #echo "Allow outgoing NTP"
 #iptables -A OUTPUT -o $EXT -d 192.168.0.1 -p udp --dport 123 -j ACCEPT
 #echo "Allow outgoing WHOIS lookups"
@@ -96,6 +100,6 @@ iptables -A FORWARD -o $EXT -i $WIFI -s $WIFI_NET -m conntrack --ctstate NEW -j 
 echo "Do not reply with Destination Unreachable messages"
 iptables -A OUTPUT -p icmp --icmp-type destination-unreachable -j DROP
 echo "Log all dropped packets"
-iptables -A INPUT -m limit --limit 3/sec -j LOG --log-level debug --log-prefix 'DROPIN>'
-iptables -A OUTPUT -m limit --limit 3/sec -j LOG --log-level debug --log-prefix 'DROPOUT>'
-iptables -A FORWARD -m limit --limit 3/sec -j LOG --log-level debug --log-prefix 'DROPFWD>'
+iptables -A INPUT -m limit --limit 3/sec -j LOG --log-level debug --log-prefix "DROPIN>"
+iptables -A OUTPUT -m limit --limit 3/sec -j LOG --log-level debug --log-prefix "DROPOUT>"
+iptables -A FORWARD -m limit --limit 3/sec -j LOG --log-level debug --log-prefix "DROPFWD>"
