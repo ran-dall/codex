@@ -10,16 +10,17 @@ If you have a comment or suggestion, please open an [Issue](https://github.com/d
 - [Verify YubiKey](#verify-yubikey)
 - [Download OS Image](#download-os-image)
 - [Required software](#required-software)
-  * [Debian/Ubuntu](#debian-ubuntu)
+  * [Debian/Ubuntu](#debianubuntu)
   * [Arch](#arch)
   * [RHEL7](#rhel7)
+  * [NixOS](#nixos)
   * [OpenBSD](#openbsd)
   * [macOS](#macos)
   * [Windows](#windows)
 - [Entropy](#entropy)
 - [Creating keys](#creating-keys)
 - [Master key](#master-key)
-- [Sign with an existing key (optional)](#sign-with-an-existing-key--optional-)
+- [Sign with an existing key (optional)](#sign-with-an-existing-key-optional)
 - [Sub-keys](#sub-keys)
   * [Signing](#signing)
   * [Encryption](#encryption)
@@ -43,10 +44,10 @@ If you have a comment or suggestion, please open an [Issue](https://github.com/d
   * [Create configuration](#create-configuration)
   * [Replace agents](#replace-agents)
   * [Copy public key](#copy-public-key)
-  * [(Optional) Save public key for identity file configuration](#-optional--save-public-key-for-identity-file-configuration)
+  * [(Optional) Save public key for identity file configuration](#optional-save-public-key-for-identity-file-configuration)
   * [Connect with public key authentication](#connect-with-public-key-authentication)
   * [Import SSH keys](#import-ssh-keys)
-  * [Remote Machines (Agent Forwarding)](#remote-machines--agent-forwarding-)
+  * [Remote Machines (Agent Forwarding)](#remote-machines-agent-forwarding)
     + [Steps for older distributions](#steps-for-older-distributions)
   * [GitHub](#github)
   * [OpenBSD](#openbsd-1)
@@ -80,12 +81,12 @@ You will need several small storage devices for booting a temporary operating sy
 
 It is recommended to generate cryptographic keys and configure YubiKey from a secure operating system and using an ephemeral environment ("live image"), such as [Debian](https://www.debian.org/CD/live/), [Tails](https://tails.boum.org/index.en.html), or [OpenBSD](https://www.openbsd.org/) booted from a USB drive.
 
-Depending on your threat model and/or level of inherent trust in your own system, it may also be a valid option to run the live image within a virtual machine using VirtualBox or VMWare software.
+Depending on your threat model and/or level of inherent trust in your own system, it may also be a valid option to run the live image within a virtual machine using [virt-manager](https://virt-manager.org/), VirtualBox, or VMWare software.
 
 To use Debian, download the latest image:
 
 ```console
-$ curl -LfO https://cdimage.debian.org/debian-cd/current-live/amd64/iso-hybrid/debian-live-10.2.0-amd64-xfce.iso
+$ curl -LfO https://cdimage.debian.org/debian-cd/current-live/amd64/iso-hybrid/debian-live-10.3.0-amd64-xfce.iso
 
 $ curl -LfO https://cdimage.debian.org/debian-cd/current-live/amd64/iso-hybrid/SHA512SUMS
 
@@ -96,18 +97,17 @@ Verify the signature of the hashes file with GPG:
 
 ```console
 $ gpg --verify SHA512SUMS.sign SHA512SUMS
-gpg: Signature made Sat Nov 16 18:49:18 2019 PST
+gpg: Signature made Sat Feb  8 18:02:16 2020 PST
 gpg:                using RSA key DF9B9C49EAA9298432589D76DA87E80D6294BE9B
 gpg: Can't check signature: No public key
 
 $ gpg --keyserver hkps://keyring.debian.org --recv DF9B9C49EAA9298432589D76DA87E80D6294BE9B
-gpg: key 0xDA87E80D6294BE9B: 5 signatures not checked due to missing keys
 gpg: key 0xDA87E80D6294BE9B: public key "Debian CD signing key <debian-cd@lists.debian.org>" imported
 gpg: Total number processed: 1
 gpg:               imported: 1
 
 $ gpg --verify SHA512SUMS.sign SHA512SUMS
-gpg: Signature made Sat Nov 16 18:49:18 2019 PST
+gpg: Signature made Sat Feb  8 18:02:16 2020 PST
 gpg:                using RSA key DF9B9C49EAA9298432589D76DA87E80D6294BE9B
 gpg: Good signature from "Debian CD signing key <debian-cd@lists.debian.org>" [unknown]
 gpg: WARNING: This key is not certified with a trusted signature!
@@ -124,8 +124,8 @@ $ gpg --keyserver hkps://keyserver.ubuntu.com:443 --recv DF9B9C49EAA9298432589D7
 Ensure the SHA512 hash of the live image matches the one in the signed file.
 
 ```console
-$ grep $(sha512sum debian-live-10.2.0-amd64-xfce.iso) SHA512SUMS
-SHA512SUMS:b253e347bf04c4e16b4c948b88bfba58f6084717f8ca290d5ea320837f63cf69b46734b7127dabd114ad88022075020982434fcf31463b82c6225671e7116a4d  debian-live-10.2.0-amd64-xfce.iso
+$ grep $(sha512sum debian-live-10.3.0-amd64-xfce.iso) SHA512SUMS
+SHA512SUMS:c6adede144eb32b7316b65342f7445cb13b95ef17551d47ce1a8468d3954710f5f68c979c1086aa1b94262c8bfd86679eb38b01731c7b9aaeaca690455f1ff7f  debian-live-10.3.0-amd64-xfce.iso
 ```
 
 See [Verifying authenticity of Debian CDs](https://www.debian.org/CD/verify) for more information.
@@ -147,7 +147,7 @@ sd 2:0:0:0: [sdb] Write cache: disabled, read cache: enabled, doesn't support DP
 sdb: sdb1 sdb2
 sd 2:0:0:0: [sdb] Attached SCSI removable disk
 
-$ sudo dd if=debian-live-10.2.0-amd64-xfce.iso of=/dev/sdb bs=4M; sync
+$ sudo dd if=debian-live-10.3.0-amd64-xfce.iso of=/dev/sdb bs=4M; sync
 465+1 records in
 465+1 records out
 1951432704 bytes (2.0 GB, 1.8 GiB) copied, 42.8543 s, 45.5 MB/s
@@ -160,7 +160,7 @@ $ dmesg | tail -n2
 sd2 at scsibus4 targ 1 lun 0: <TS-RDF5, SD Transcend, TS3A> SCSI4 0/direct removable serial.0000000000000
 sd2: 15193MB, 512 bytes/sector, 31116288 sectors
 
-$ doas dd if=debian-live-10.2.0-amd64-xfce.iso of=/dev/rsd2c bs=4m
+$ doas dd if=debian-live-10.3.0-amd64-xfce.iso of=/dev/rsd2c bs=4m
 465+1 records in
 465+1 records out
 1951432704 bytes transferred in 139.125 secs (14026448 bytes/sec)
@@ -185,13 +185,13 @@ Open the terminal and install required software packages.
 ```console
 $ sudo apt update
 
-$ sudo apt install -y gnupg2 gnupg-agent dirmngr cryptsetup scdaemon pcscd secure-delete hopenpgp-tools yubikey-personalization
+$ sudo apt install -y wget gnupg2 gnupg-agent dirmngr cryptsetup scdaemon pcscd secure-delete hopenpgp-tools yubikey-personalization
 ```
 
 ## Arch
 
 ```console
-$ sudo pacman -Syu gnupg2 pcsclite ccid hopenpgp-tools yubikey-personalization
+$ sudo pacman -Syu gnupg pcsclite ccid hopenpgp-tools yubikey-personalization
 ```
 
 ## RHEL7
@@ -199,6 +199,56 @@ $ sudo pacman -Syu gnupg2 pcsclite ccid hopenpgp-tools yubikey-personalization
 ```console
 $ sudo yum install -y gnupg2 pinentry-curses pcsc-lite pcsc-lite-libs gnupg2-smime
 ```
+
+## NixOS
+
+Generate a NixOS LiveCD image with the given config:
+
+```nix
+# yubikey-installer.nix
+{ nixpkgs ? <nixpkgs>, system ? "x86_64-linux" } :
+
+let
+  config = { pkgs, ... }:
+  with pkgs; {
+    imports = [ <nixpkgs/nixos/modules/installer/cd-dvd/installation-cd-graphical-kde.nix> ];
+
+    boot.kernelPackages = linuxPackages_latest;
+
+    services.pcscd.enable = true;
+    services.udev.packages = [ yubikey-personalization ];
+
+    environment.systemPackages = [ gnupg pinentry-curses pinentry-qt paperkey wget ];
+
+    programs = {
+      ssh.startAgent = false;
+      gnupg.agent = {
+        enable = true;
+        enableSSHSupport = true;
+      };
+    };
+  };
+
+  evalNixos = configuration: import <nixpkgs/nixos> {
+    inherit system configuration;
+  };
+
+in {
+  iso = (evalNixos config).config.system.build.isoImage;
+}
+```
+
+Build the installer and copy it to a USB drive.
+
+```console
+$ nix build -f yubikey-installer.nix --out-link installer
+
+$ sudo cp -v installer/iso/*.iso /dev/sdb; sync
+'installer/iso/nixos-20.03.git.c438ce1-x86_64-linux.iso' -> '/dev/sdb'
+```
+
+On NixOS, ensure that you have `pinentry-program /run/current-system/sw/bin/pinentry-curses` in your `$GNUPGHOME/gpg-agent.conf` before running any `gpg` commands.
+
 
 ## OpenBSD
 
@@ -324,7 +374,7 @@ You'll be prompted to enter and verify a passphrase - keep it handy as you'll ne
 To generate a strong passphrase which could be written down in a hidden or secure place; or memorized:
 
 ```console
-$ gpg --gen-random -a 0 24
+$ gpg --gen-random --armor 0 24
 ydOmByxmDe63u7gqx2XI9eDgpvJwibNH
 ```
 
@@ -712,8 +762,38 @@ ssb  rsa4096/0x3F29127E79649A3D
 [ultimate] (1). Dr Duh <doc@duh.to>
 [ unknown] (2). Dr Duh <DrDuh@other.org>
 
+gpg> uid 1
+
+sec  rsa4096/0xFF3E7D88647EBCDB
+created: 2017-10-09  expires: never       usage: SC
+    trust: ultimate      validity: ultimate
+ssb  rsa4096/0xBECFA3C1AE191D15
+    created: 2017-10-09  expires: never       usage: S
+ssb  rsa4096/0x5912A795E90DD2CF
+    created: 2017-10-09  expires: never       usage: E
+ssb  rsa4096/0x3F29127E79649A3D
+    created: 2017-10-09  expires: never       usage: A
+[ultimate] (1)* Dr Duh <doc@duh.to>
+[ unknown] (2). Dr Duh <DrDuh@other.org>
+
+gpg> primary
+
+sec  rsa4096/0xFF3E7D88647EBCDB
+created: 2017-10-09  expires: never       usage: SC
+    trust: ultimate      validity: ultimate
+ssb  rsa4096/0xBECFA3C1AE191D15
+    created: 2017-10-09  expires: never       usage: S
+ssb  rsa4096/0x5912A795E90DD2CF
+    created: 2017-10-09  expires: never       usage: E
+ssb  rsa4096/0x3F29127E79649A3D
+    created: 2017-10-09  expires: never       usage: A
+[ultimate] (1)* Dr Duh <doc@duh.to>
+[ unknown] (2)  Dr Duh <DrDuh@other.org>
+
 gpg> save
 ```
+
+By default, the last identity added will be the primary user ID. Use `primary` to change that.
 
 # Verify
 
@@ -767,7 +847,7 @@ $ gpg -o \path\to\dir\sub.gpg --armor --export-secret-subkeys $KEYID
 
 Once keys are moved to YubiKey, they cannot be moved again! Create an **encrypted** backup of the keyring and consider using a [paper copy](https://www.jabberwocky.com/software/paperkey/) of the keys as an additional backup measure.
 
-**Tip**: The ext2 filesystem (without encryption) can be mounted on both Linux and OpenBSD.
+**Tip** The ext2 filesystem (without encryption) can be mounted on both Linux and OpenBSD. Consider using a FAT32/NTFS filesystem for MacOS/Windows compatibility instead.
 
 **Linux**
 
@@ -782,7 +862,6 @@ sd 7:0:0:0: Attached scsi generic sg1 type 0
 sd 7:0:0:0: [sdb] 31116288 512-byte logical blocks: (15.9 GB/14.8 GiB)
 sd 7:0:0:0: [sdb] Write Protect is off
 sd 7:0:0:0: [sdb] Mode Sense: 23 00 00 00
-sd 7:0:0:0: [sdb] Write cache: disabled, read cache: enabled, doesn't support DPO or FUA
 sdb: sdb1
 sd 7:0:0:0: [sdb] Attached SCSI removable disk
 ```
@@ -797,7 +876,7 @@ Erase and create a new partition table:
 
 ```console
 $ sudo fdisk /dev/sdb
-Welcome to fdisk (util-linux 2.29.2).
+Welcome to fdisk (util-linux 2.33.1).
 
 Command (m for help): o
 Created a new DOS disklabel with disk identifier 0xeac7ee35.
@@ -808,11 +887,11 @@ Calling ioctl() to re-read partition table.
 Syncing disks.
 ```
 
-Create a new partition with a 10 Megabyte size:
+Create a new partition with a 25 Megabyte size:
 
 ```console
 $ sudo fdisk /dev/sdb
-Welcome to fdisk (util-linux 2.29.2).
+Welcome to fdisk (util-linux 2.33.1).
 
 Command (m for help): n
 Partition type
@@ -821,9 +900,9 @@ Partition type
 Select (default p):
 Partition number (1-4, default 1):
 First sector (2048-62980095, default 2048):
-Last sector, +sectors or +size{K,M,G,T,P} (2048-62980095, default 62980095): +10M
+Last sector, +sectors or +size{K,M,G,T,P} (2048-62980095, default 62980095): +25M
 
-Created a new partition 1 of type 'Linux' and of size 10 MiB.
+Created a new partition 1 of type 'Linux' and of size 25 MiB.
 
 Command (m for help): w
 The partition table has been altered.
@@ -883,7 +962,7 @@ $ sudo cp onerng_3.6-1_all.deb /mnt/encrypted-usb
 
 Keep the backup mounted if you plan on setting up two or more keys as `keytocard` **will [delete](https://lists.gnupg.org/pipermail/gnupg-users/2016-July/056353.html) the local copy** on save.
 
-Otherwise, unmount and disconnected the encrypted volume:
+Unmount, close and disconnected the encrypted volume:
 
 ```console
 $ sudo umount /mnt/encrypted-usb
@@ -905,9 +984,9 @@ Partition type
 Select (default p):
 Partition number (2-4, default 2):
 First sector (22528-31116287, default 22528):
-Last sector, +sectors or +size{K,M,G,T,P} (22528-31116287, default 31116287): +10M
+Last sector, +sectors or +size{K,M,G,T,P} (22528-31116287, default 31116287): +25M
 
-Created a new partition 2 of type 'Linux' and of size 10 MiB.
+Created a new partition 2 of type 'Linux' and of size 25 MiB.
 
 Command (m for help): w
 The partition table has been altered.
@@ -965,7 +1044,7 @@ Print the existing partitions to make sure it's the right device:
 $ doas disklabel -h sd2
 ```
 
-Initialize the disk by creating an `a` partition with FS type `RAID` and size of 10 Megabytes:
+Initialize the disk by creating an `a` partition with FS type `RAID` and size of 25 Megabytes:
 
 ```console
 $ doas fdisk -iy sd2
@@ -975,7 +1054,7 @@ $ doas disklabel -E sd2
 Label editor (enter '?' for help at any prompt)
 sd2> a a
 offset: [64]
-size: [31101776] 10M
+size: [31101776] 25M
 FS type: [4.2BSD] RAID
 sd2*> w
 sd2> q
@@ -1008,10 +1087,6 @@ sd3> q
 No label changes.
 
 $ doas newfs sd3i
-/dev/rsd3i: 7.8MB in 16000 sectors of 512 bytes
-4 cylinder groups of 1.95MB, 125 blocks, 256 inodes each
-super-block backups (for fsck -b #) at:
- 32, 4032, 8032, 12032,
 ```
 
 Mount the filesystem and copy the temporary directory with the keyring:
@@ -1045,17 +1120,13 @@ $ doas disklabel -E sd2
 Label editor (enter '?' for help at any prompt)
 sd2> a b
 offset: [32130]
-size: [31069710] 10M
+size: [31069710] 25M
 FS type: [swap] 4.2BSD
 sd2*> w
 sd2> q
 No label changes.
 
 $ doas newfs sd2b
-/dev/rsd2b: 15.7MB in 32096 sectors of 512 bytes
-5 cylinder groups of 3.89MB, 249 blocks, 512 inodes each
-super-block backups (for fsck -b #) at:
- 32, 8000, 15968, 23936, 31904,
 
 $ doas mkdir /mnt/public
 
@@ -1074,7 +1145,7 @@ Use GPG to configure YubiKey as a smartcard:
 $ gpg --card-edit
 Reader ...........: Yubico Yubikey 4 OTP U2F CCID
 Application ID ...: D2760001240102010006055532110000
-Version ..........: 2.1
+Version ..........: 3.4
 Manufacturer .....: Yubico
 Serial number ....: 05553211
 Name of cardholder: [not set]
@@ -1151,7 +1222,7 @@ Login data (account name): doc@duh.to
 gpg/card> list
 
 Application ID ...: D2760001240102010006055532110000
-Version ..........: 2.1
+Version ..........: 3.4
 Manufacturer .....: unknown
 Serial number ....: 05553211
 Name of cardholder: Dr Duh
@@ -1161,7 +1232,7 @@ URL of public key : [not set]
 Login data .......: doc@duh.to
 Private DO 4 .....: [not set]
 Signature PIN ....: not forced
-Key attributes ...: 2048R 2048R 2048R
+Key attributes ...: rsa2048 rsa2048 rsa2048
 Max. PIN lengths .: 127 127 127
 PIN retry counter : 3 0 3
 Signature counter : 0
@@ -1297,6 +1368,22 @@ ssb>  rsa4096/0x5912A795E90DD2CF 2017-10-09 [E] [expires: 2018-10-09]
 ssb>  rsa4096/0x3F29127E79649A3D 2017-10-09 [A] [expires: 2018-10-09]
 ```
 
+# Multiple YubiKeys
+
+If you have additional (e.g. backup) security devices, restore the USB backup and repeat the [Configure Smartcard](#configure-smartcard) steps.
+
+```console
+$ cd
+
+$ mv -vi $GNUPGHOME $GNUPGHOME.1
+renamed '/tmp.FLZC0xcM' -> '/tmp.FLZC0xcM.1'
+
+$ cp -avi /mnt/encrypted-usb/tmp.XXX $GNUPGHOME
+'/mnt/encrypted-usb/tmp.FLZC0xcM' -> '/tmp.FLZC0xcM'
+
+$ cd $GNUPGHOME
+```
+
 # Cleanup
 
 Ensure you have:
@@ -1346,10 +1433,10 @@ $ doas pkg_add gnupg pcsc-tools
 $ doas mount /dev/sd2b /mnt
 ```
 
-Import the public key:
+Import the public key file:
 
 ```console
-$ gpg --import /mnt/pubkey.txt
+$ gpg --import /mnt/0x*txt
 gpg: key 0xFF3E7D88647EBCDB: public key "Dr Duh <doc@duh.to>" imported
 gpg: Total number processed: 1
 gpg:               imported: 1
@@ -1408,8 +1495,9 @@ Remove and re-insert YubiKey and check the status:
 
 ```console
 $ gpg --card-status
+Reader ...........: Yubico YubiKey OTP FIDO CCID 00 00
 Application ID ...: D2760001240102010006055532110000
-Version ..........: 2.1
+Version ..........: 3.4
 Manufacturer .....: Yubico
 Serial number ....: 05553211
 Name of cardholder: Dr Duh
@@ -1418,7 +1506,7 @@ Sex ..............: unspecified
 URL of public key : [not set]
 Login data .......: doc@duh.to
 Signature PIN ....: not forced
-Key attributes ...: 4096R 4096R 4096R
+Key attributes ...: rsa4096 rsa4096 rsa4096
 Max. PIN lengths .: 127 127 127
 PIN retry counter : 3 3 3
 Signature counter : 0
@@ -1479,6 +1567,31 @@ gpg:                using RSA key 0xBECFA3C1AE191D15
 gpg: Good signature from "Dr Duh <doc@duh.to>" [ultimate]
 Primary key fingerprint: 011C E16B D45B 27A5 5BA8  776D FF3E 7D88 647E BCDB
      Subkey fingerprint: 07AA 7735 E502 C5EB E09E  B8B0 BECF A3C1 AE19 1D15
+```
+
+Use a [shell function](https://github.com/drduh/config/blob/master/zshrc) to make encrypting files easier:
+
+```
+secret () {
+        output=~/"${1}".$(date +%s).enc
+        gpg --encrypt --armor --output ${output} -r 0x0000 -r 0x0001 -r 0x0002 "${1}" && echo "${1} -> ${output}"
+}
+
+reveal () {
+        output=$(echo "${1}" | rev | cut -c16- | rev)
+        gpg --decrypt --output ${output} "${1}" && echo "${1} -> ${output}"
+}
+```
+
+```console
+$ secret document.pdf
+document.pdf -> document.pdf.1580000000.enc
+
+$ reveal document.pdf.1580000000.enc
+gpg: anonymous recipient; trying secret key 0xFF3E7D88647EBCDB ...
+gpg: okay, we are the anonymous recipient.
+gpg: encrypted with RSA key, ID 0x0000000000000000
+document.pdf.1580000000.enc -> document.pdf
 ```
 
 # Rotating keys
@@ -1585,7 +1698,7 @@ pinentry-program /usr/bin/pinentry-curses
 
 **Tip** Set `pinentry-program /usr/bin/pinentry-gnome3` for a GUI-based prompt. If the _pinentry_ graphical dialog doesn't show and you get this error: `sign_and_send_pubkey: signing failed: agent refused operation`, you may need to install the `dbus-user-session` package and restart the computer for the `dbus` user session to be fully inherited; this is because behind the scenes, `pinentry` complains about `No $DBUS_SESSION_BUS_ADDRESS found`, falls back to `curses` but doesn't find the expected `tty`.
 
-On macOS, use `brew install pinentry-mac` and adjust the program path to suit.
+On macOS, use `brew install pinentry-mac` and set the program path to `pinentry-program /usr/local/bin/pinentry-mac` or `pinentry-program /usr/local/MacGPG2/libexec/pinentry-mac.app/Contents/MacOS/pinentry-mac` if using MacGPG Suite.
 
 ## Replace agents
 
@@ -1599,7 +1712,7 @@ export SSH_AUTH_SOCK="/run/user/$UID/gnupg/S.gpg-agent.ssh"
 gpg-connect-agent updatestartuptty /bye > /dev/null
 ```
 
-On modern systems, you can use the following instead, as `gpgconf --list-dirs agent-ssh-socket` will automatically set `SSH_AUTH_SOCK` to the correct value; and is therefore typically better than hard-coding to `run/user/$UID/gnupg/S.gpg-agent.ssh`, if available:
+On modern systems, `gpgconf --list-dirs agent-ssh-socket` will automatically set `SSH_AUTH_SOCK` to the correct value and is better than hard-coding to `run/user/$UID/gnupg/S.gpg-agent.ssh`, if available:
 
 ```console
 export GPG_TTY="$(tty)"
@@ -1668,7 +1781,7 @@ debug1: Authentication succeeded (publickey).
 [...]
 ```
 
-**Note** To make multiple connections or securely transfer many files, consider using the [ControlMaster](https://en.wikibooks.org/wiki/OpenSSH/Cookbook/Multiplexing) ssh option. Also see [drduh/config/ssh_config](https://github.com/drduh/config/blob/master/ssh_config).
+**Tip** To make multiple connections or securely transfer many files, consider using the [ControlMaster](https://en.wikibooks.org/wiki/OpenSSH/Cookbook/Multiplexing) ssh option. Also see [drduh/config/ssh_config](https://github.com/drduh/config/blob/master/ssh_config).
 
 ## Import SSH keys
 
@@ -1683,7 +1796,7 @@ $ ssh-add ~/.ssh/id_rsa && rm ~/.ssh/id_rsa
 
 When invoking `ssh-add`, it will prompt for the SSH key's passphrase if present, then the `pinentry` program will prompt and confirm for a new passphrase to use to encrypt the converted key within the GPG key store.
 
-The migrated key should be listed in `ssh-add -l`:
+The migrated key will be listed in `ssh-add -l`:
 
 ```console
 $ ssh-add -l
@@ -1780,9 +1893,10 @@ To authenticate:
 
 **Windows**
 
-Run the following command:
+Run the following commands:
 
 	> git config --global core.sshcommand 'plink -agent'
+	> git config --global gpg.program 'C:\Program Files (x86)\GnuPG\bin\gpg.exe'
 
 You can then change the repository url to `git@github.com:USERNAME/repository` and any authenticated commands will be authorized by YubiKey.
 
@@ -1802,10 +1916,15 @@ $ doas reboot
 
 ## Windows
 
-Windows can already have some virtual smartcard readers installed, like the one provided for Windows Hello. To ensure your YubiKey is the correct one used by scdaemon, you should add it to its configuration. You will need your device's full name. To find out what is your device's full name, plug your YubiKey, open the Device Manager, select "View->Show hidden devices". Go to the Software Devices list, you should see something like `Yubico YubiKey OTP+FIDO+CCID 0`. The name slightly differs according to the model. Thanks to [Scott Hanselman](https://www.hanselman.com/blog/HowToSetupSignedGitCommitsWithAYubiKeyNEOAndGPGAndKeybaseOnWindows.aspx) for sharing this information.
+Windows can already have some virtual smartcard readers installed, like the one provided for Windows Hello. To ensure your YubiKey is the correct one used by scdaemon, you should add it to its configuration. You will need your device's full name. To find out what is your device's full name, plug your YubiKey, open the Device Manager, select "View > Show hidden devices". Go to the Software Devices list, you should see something like `Yubico YubiKey OTP+FIDO+CCID 0`. The name slightly differs according to the model. Thanks to [Scott Hanselman](https://www.hanselman.com/blog/HowToSetupSignedGitCommitsWithAYubiKeyNEOAndGPGAndKeybaseOnWindows.aspx) for sharing this information.
 
-* Create or edit %APPDATA%/gnupg/scdaemon.conf, add `reader-port <your yubikey device's full name>`.
-* In %APPDATA%/gnupg/gpg-agent.conf, add:
+* Create or edit `%APPDATA%/gnupg/scdaemon.conf` to add:
+
+```
+reader-port <your yubikey device's full name>
+```
+
+* Edit `%APPDATA%/gnupg/gpg-agent.conf` to add:
 
 ```
 enable-ssh-support
@@ -1821,13 +1940,13 @@ enable-putty-support
 
 * Enter `> gpg --card-status` to see YubiKey details.
 * Import the [public key](#export-public-key): `> gpg --import <path to public key file>`
-* Trust it: [Trust master key](#trust-master-key)
+* [Trust the master key](#trust-master-key)
 * Retrieve the public key id: `> gpg --list-public-keys`
 * Export the SSH key from GPG: `> gpg --export-ssh-key <public key id>`
 
 Copy this key to a file for later use. It represents the public SSH key corresponding to the secret key on the YubiKey. You can upload this key to any server you wish to SSH into.
 
-* Create a shortcut that points to `gpg-connect-agent /bye` and place it in the startup folder `shell:startup` to make sure the agent starts after a system shutdown. Modify the shortcut properties so it starts in a "Minimized" window, to avoid unnecessary noise at startup.
+Create a shortcut that points to `gpg-connect-agent /bye` and place it in the startup folder `shell:startup` to make sure the agent starts after a system shutdown. Modify the shortcut properties so it starts in a "Minimized" window, to avoid unnecessary noise at startup.
 
 Now you can use PuTTY for public key SSH authentication. When the server asks for public key verification, PuTTY will forward the request to GPG, which will prompt you for a PIN and authorize the login using YubiKey.
 
@@ -1856,14 +1975,14 @@ Edit `~/.ssh/config` to add the following for each host you want to use agent fo
 
 ```
 ForwardAgent yes
-RemoteForward <remote ssh socket path> /tmp/S.weasel-pageant
+RemoteForward <remote SSH socket path> /tmp/S.weasel-pageant
 ```
 
-**Note** The remote ssh socket path can be found with `gpgconf --list-dirs agent-ssh-socket`
+**Note** The remote SSH socket path can be found with `gpgconf --list-dirs agent-ssh-socket`
 
 #### Remote host configuration
 
-You may have to add the following to the shell rc file:  _(On Linux, this is only required on the laptop/workstation where the YubiKey is plugged in, and **NOT** on the remote host server that you connect to; in fact at least on some Linux distributions, changing SSH_AUTH_SOCK on the server breaks agent forwarding.)_
+You may have to add the following to the shell rc file. On Linux, this is only required on the laptop/workstation where the YubiKey is plugged in, and **NOT** on the remote host server that you connect to; in fact at least on some Linux distributions, changing SSH_AUTH_SOCK on the server breaks agent forwarding.
 
 ```
 export SSH_AUTH_SOCK=$(gpgconf --list-dirs agent-ssh-socket)
@@ -1977,11 +2096,8 @@ On macOS, install gpgme using Homebrew:
 $ brew install gpgme
 ```
 
-To allow Chrome to run gpgme:
-```console
-$ nano ~/Library/Application\ Support/Google/Chrome/NativeMessagingHosts/gpgmejson.json
-```
-and paste:
+To allow Chrome to run gpgme, edit `~/Library/Application\ Support/Google/Chrome/NativeMessagingHosts/gpgmejson.json` and add:
+
 ```json
 {
     "name": "gpgmejson",
@@ -1994,14 +2110,13 @@ and paste:
 }
 ```
 
-Edit the default path to allow Chrome to find gpg:
+Edit the default path to allow Chrome to find GPG:
+
 ```console
 $ sudo launchctl config user path /usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin
 ```
 
-Close Chrome if it is running and reboot your Mac.
-
-Finally install the [mailvelope extension](https://chrome.google.com/webstore/detail/mailvelope/kajibbejlbohfaggdiogboambcijhkke) from the Chrome app store.
+Finally, install the [Mailvelope extension](https://chrome.google.com/webstore/detail/mailvelope/kajibbejlbohfaggdiogboambcijhkke) from the Chrome app store.
 
 # Reset
 
@@ -2052,7 +2167,9 @@ scd apdu 00 44 00 00
 
 - If you still receive the error, `sign_and_send_pubkey: signing failed: agent refused operation` - [run the command](https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=835394) `gpg-connect-agent updatestartuptty /bye`
 
-- If you still receive the error, `sign_and_send_pubkey: signing failed: agent refused operation` - check `~/.gnupg/gpg-agent.conf` to make sure the path to `pinentry` is correct.
+- If you still receive the error, `sign_and_send_pubkey: signing failed: agent refused operation` - edit `~/.gnupg/gpg-agent.conf` to set a valid `pinentry` program path, e.g. `pinentry-program /usr/local/bin/pinentry-mac` on macOS.
+
+- If you receive the error, `The agent has no identities` from `ssh-add -L`, make sure you have installed and started `scdaemon`.
 
 - If you receive the error, `Error connecting to agent: No such file or directory` from `ssh-add -L`, the UNIX file socket that the agent uses for communication with other processes may not be set up correctly. On Debian, try `export SSH_AUTH_SOCK="/run/user/$UID/gnupg/S.gpg-agent.ssh"`. Also see that `gpgconf --list-dirs agent-ssh-socket` is returning single path, to existing `S.gpg-agent.ssh` socket.
 
