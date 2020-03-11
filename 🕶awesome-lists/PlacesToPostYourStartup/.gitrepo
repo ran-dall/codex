@@ -6,7 +6,7 @@
 [subrepo]
 	remote = git@github.com:mmccaff/PlacesToPostYourStartup.git
 	branch = master
-	commit = 9ed4bc8728a41c552ce576e44bf167d4ad8fb20b
-	parent = fd5930e5b01dbd6f9d9efe0e925e89388e59398c
+	commit = 2bdbe8930bc1f4ebdbcb0344c2d0668d249a11ea
+	parent = 6ebe88e7678da834ff8d8c95c5fe68fdc4923578
 	method = merge
 	cmdver = 0.4.0
