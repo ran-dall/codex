@@ -13,6 +13,6 @@ If you find **do** something that is either inaccurate or outdated in the text, 
  
 ---
 ### License
-The content of this project itself is licensed under the [**Creative Commons Attribution-ShareAlike 4.0 International License**](http://creativecommons.org/licenses/by-sa/4.0/), and any shared *original* source code used in the content is licensed under the [**Mozilla Public License 2.0**](https://github.com/ran-dall/codex/blob/master/LICENSE). 
+The *original* content, authored by [@ran-dall](https://github.com/ran-dall), is licensed under the [**Creative Commons Attribution-ShareAlike 4.0 International License**](http://creativecommons.org/licenses/by-sa/4.0/), and any shared *original* source code used in the content is licensed under the [**Mozilla Public License 2.0**](https://github.com/ran-dall/codex/blob/master/LICENSE). 
 
 All other content may be subject to different licensing terms and agreements.
