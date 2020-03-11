@@ -1,0 +1,12 @@
+; DO NOT EDIT (unless you know what you are doing)
+;
+; This subdirectory is a git "subrepo", and this file is maintained by the
+; git-subrepo command. See https://github.com/git-commands/git-subrepo#readme
+;
+[subrepo]
+	remote = git@github.com:cetic/unikernels.git
+	branch = master
+	commit = 0cff49598da2c34600e50af62b127afbd6dd5205
+	parent = 7bec3abe320ac17e85790175e1aa80a31ea90189
+	method = merge
+	cmdver = 0.4.0
