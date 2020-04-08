@@ -6,7 +6,7 @@
 [subrepo]
 	remote = git@github.com:troxler/awesome-css-frameworks.git
 	branch = master
-	commit = c71a821050aa9e10c21cad9870b7b9fa55685616
-	parent = 4db96fa30b6f5851bae2833c69fced8e39799d2f
+	commit = 528d934b12be3438f347054bada2daf449abaca2
+	parent = b9d7caa5d1ba1d87a35ef3b296b539255cd83985
 	method = merge
 	cmdver = 0.4.0

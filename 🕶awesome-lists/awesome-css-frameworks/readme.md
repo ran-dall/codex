@@ -66,12 +66,6 @@ Frameworks that are smaller than ~5KB.
   [Repo](https://github.com/franciscop/picnic)
   | #SCSS
 
-- [**mini.css**](http://minicss.org) - Minimal, responsive, style-agnostic CSS framework.  
-  ![](https://img.shields.io/github/stars/Chalarangelo/mini.css.svg?style=social&label=Star)
-  [Docs](http://minicss.org/docs),
-  [Repo](https://github.com/Chalarangelo/mini.css)
-  | #SCSS
-
 - [**sakura**](https://oxal.org/projects/sakura/) - Minimal classless CSS framework/theme.  
   ![](https://img.shields.io/github/stars/oxalorg/sakura.svg?style=social&label=Star)
   [Demo](https://oxal.org/projects/sakura/demo/),
@@ -283,13 +277,6 @@ They do not provide actual styling but utilities (e.g. mixins) that you can use 
   [Scaffold](http://bitters.bourbon.io/)
   | #SCSS
 
-- [**Neat**](https://neat.bourbon.io/) - Lightweight and flexible Sass grid.  
-  ![](https://img.shields.io/github/stars/thoughtbot/neat.svg?style=social&label=Star)
-  [Demo](https://neat.bourbon.io/examples/),
-  [Docs](https://neat.bourbon.io/docs/latest/),
-  [Repo](https://github.com/thoughtbot/neat)
-  | #SCSS
-
 
 ## Stalled Development
 
@@ -323,6 +310,19 @@ We are keeping them here for reference/inspiration and hope for a revival.
 - [**Basscss**](http://basscss.com) - Low-level CSS toolkit.  
   ![](https://img.shields.io/github/stars/basscss/basscss.svg?style=social&label=Star)
   [Repo](https://github.com/basscss/basscss/)
+  
+- [**Neat**](https://neat.bourbon.io/) - Lightweight and flexible Sass grid.  
+  ![](https://img.shields.io/github/stars/thoughtbot/neat.svg?style=social&label=Star)
+  [Demo](https://neat.bourbon.io/examples/),
+  [Docs](https://neat.bourbon.io/docs/latest/),
+  [Repo](https://github.com/thoughtbot/neat)
+  | #SCSS
+
+- [**mini.css**](http://minicss.org) - Minimal, responsive, style-agnostic CSS framework.  
+  ![](https://img.shields.io/github/stars/Chalarangelo/mini.css.svg?style=social&label=Star)
+  [Docs](http://minicss.org/docs),
+  [Repo](https://github.com/Chalarangelo/mini.css)
+  | #SCSS
 
 - [**Mobi.css**](http://getmobicss.com) - Lightweight, scalable, mobile-first CSS framework.  
   ![](https://img.shields.io/github/stars/mobi-css/mobi.css.svg?style=social&label=Star)
